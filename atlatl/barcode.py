@@ -7,11 +7,10 @@ the wrappers for multiple tools
 """
 
 
-@tc.typecheck
 class Bar(object):
     """A single bar, which should be contained in a Barcode"""
 
-    def __init__(self, start: float, end: float, multiplicity: int):
+    def __init__(self, start, end, multiplicity):
         """Constructor. Takes start/birth, end/death, and multiplicity."""
         self.start = start
         self.end = end
