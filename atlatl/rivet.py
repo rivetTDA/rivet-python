@@ -87,7 +87,7 @@ def barcodes(bytes, slices):
         with open(os.path.join(dir, 'slices.txt'), 'wt') as slice_temp:
             for angle, offset in slices:
                 slice_temp.write("%s %s\n" % (angle, offset))
-        return _parse_slices(barcodes_file(precomp.name, slice_temp.name))
+        return barcodes_file(precomp.name, slice_temp.name)
 
 
 def _rivet_name(base, homology, x, y):
@@ -106,7 +106,7 @@ def compute_file(name, output_name=None, homology=0, x=0, y=0):
 
 def barcodes_file(name, slice_name):
     cmd = "%s %s --barcodes %s" % (rivet_executable, name, slice_name)
-    return subprocess.check_output(shlex.split(cmd)).split(b'\n')
+    return _parse_slices(subprocess.check_output(shlex.split(cmd)).split(b'\n'))
 
 
 def betti_file(name, x=0, y=0):
