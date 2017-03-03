@@ -6,7 +6,7 @@ Algebraic Topology Loves All These Libraries.
 Requirements
 ------------
 
-This package requires `rivet_console` from RIVET_
+This package requires `rivet_console` from RIVET_, as well as `bottleneck_dist` from Hera_ to be installed on the PATH.
 
 Sample usage
 ------------
@@ -72,4 +72,6 @@ If you're working with in-memory data:
     # Calculate bottleneck distance between any two barcodes:
     print("Distance: ", hera.bottleneck_distance(multi_bars1[0], multi_bars2[0]))
 
+
 .. _RIVET:http://rivet.online
+.. _Hera:https://bitbucket.org/grey_narn/hera
