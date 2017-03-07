@@ -4,7 +4,6 @@ import shlex
 import fractions
 import tempfile
 import os
-import typecheck as tc
 
 
 """An interface for rivet_console, using the command line
@@ -114,14 +113,12 @@ def betti_file(name, x=0, y=0):
     return _parse_betti(subprocess.check_output(shlex.split(cmd)).split(b'\n'))
 
 
-@tc.typecheck
-def bounds_file(name: str):
+def bounds_file(name):
     cmd = "%s %s --bounds" % (rivet_executable, name)
     return parse_bounds(subprocess.check_output(shlex.split(cmd)).split(b'\n'))
 
 
-@tc.typecheck
-def bounds(bytes: bytes):
+def bounds(bytes):
     assert len(bytes) > 0
     with tempfile.TemporaryDirectory() as dir:
         precomp_name = os.path.join(dir, 'precomp.rivet')

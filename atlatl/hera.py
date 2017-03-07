@@ -1,16 +1,14 @@
 from . import barcode
-import typecheck as tc
 import subprocess
 import tempfile
 import os
 
 
 # note we use a constant instead of inf because of a bug in bottleneck_dist.
-@tc.typecheck
-def bottleneck_distance(left: barcode.Barcode,
-                        right: barcode.Barcode,
-                        inf: float=1e10,
-                        cap: int=10,
+def bottleneck_distance(left,
+                        right,
+                        inf=1e10,
+                        cap=10,
                         relative_error=1e-10 # Needed to keep hera from crashing, which it does on some inputs with
                                              # default relative_error. This default value is high enough to prevent it.
                         ):
