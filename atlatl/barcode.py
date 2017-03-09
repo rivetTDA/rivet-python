@@ -1,5 +1,4 @@
 import numpy as np
-import typecheck as tc
 
 """
 Standard bar code classes that can be shared among

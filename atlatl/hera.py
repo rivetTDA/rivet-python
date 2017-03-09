@@ -1,4 +1,3 @@
-from . import barcode
 import subprocess
 import tempfile
 import os
