@@ -27,7 +27,7 @@ If you have RIVET input files already:
 
     # Calculate bottleneck distance between any two barcodes:
 
-    print("Distance: ", hera.bottleneck_distance(multi_bars1[0], multi_bars2[0]))
+    print("Distance: ", hera.bottleneck_distance(multi_bars1[0][1], multi_bars2[0][1]))
 
 
 If you're working with in-memory data:
@@ -70,7 +70,7 @@ If you're working with in-memory data:
 
 
     # Calculate bottleneck distance between any two barcodes:
-    print("Distance: ", hera.bottleneck_distance(multi_bars1[0], multi_bars2[0]))
+    print("Distance: ", hera.bottleneck_distance(multi_bars1[0][1], multi_bars2[0][1]))
 
 
 .. _RIVET:http://rivet.online
