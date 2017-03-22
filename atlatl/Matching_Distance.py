@@ -26,9 +26,9 @@ def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
     #TODO: In the future Fixed_Bounds should be an optional agrument, instead of this empty list nonsense.
     
     #First, use Fixed_Bounds to set the upper right corner and lower-left corner to be considered.
-    if Fixed_Bounds!=[]
+    if Fixed_Bounds!=[]:
         [LL,UR]=Fixed_Bounds
-    else
+    else:
         bounds1=bounds(mod1)
         bounds2=bounds(mod2)
     
@@ -42,7 +42,7 @@ def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
     #Each line is given as a (slope,offset) pair.
     List_Of_Lines=[];
     
-    for i in range(Grid_Parameter)
+    for i in range(Grid_Parameter):
         sl=90*(k+1)/(Grid_Parameter+1)
     
         #find the offset parameters such that the lines with slope sl just touches the upper left corner of the box
@@ -60,11 +60,11 @@ def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
     multi_bars2=rivet.barcodes(Mod2,List_Of_Lines)  
     
     #now compute matching distance
-    matching_distance=0
+    m_dist=0
     
-    for i in range len(List_Of_Lines)
+    for i in range(len(List_Of_Lines)):
         #first compute the unweighted distance between the pairs
-        raw_distance=hera.bottleneck_distance(multi_bars1[i][1], multi_bars2[i][1]))
+        raw_distance=hera.bottleneck_distance(multi_bars1[i][1], multi_bars2[i][1])
                        
         #To determine the weight to use for the line given by (sl,offset), we need to take into account both
         #the weight coming from slope of the line, and also the normalization, which changes both the effective 
@@ -78,31 +78,31 @@ def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
         sl=List_Of_Lines[i][0];
         m=np.tan(np.radians(sl))
             
-        if Normalize=False:       
+        if Normalize==False:       
             q=max(m,1/m)
             w=1/np.sqrt(1+q^2)
                 
-            matching_distance=max(matching_distance,w*raw_distance)
+            m_dist=max(m_dist,w*raw_distance)
             
         #next, let's consider the normalized case.  If the unnormalized slope is sl, then the normalized slope 
         #is given as follows
             
-        if Normalize=True:  
+        if Normalize==True:  
             delta_x=UR[1]-LL[1]
             delta_y=UR[2]-LL[2]
             mn=m*delta_x/delta_y
             
             #so the associated weight in the normalized case is given by
             
-                q=max(mn,1/mn)
-                w=1/np.sqrt(1+q^2)
+            q=max(mn,1/mn)
+            w=1/np.sqrt(1+q^2)
             
             #of course, this code can be made more compact, but hopfully this way is readible    
                 
             #moreover, normalizaion changes the length of a line segment along the line (sl,offset), 
             #and hence also the bottleneck distance, by a factor of 
             
-                bottleneck_stretch=sqrt(((m/delta_y)^2+(1/delta_x)^2)/(m^2+1))
-                matching_distance=max(matching_distance,w*raw_distance*bottleneck_stretch)
+            bottleneck_stretch=sqrt(((m/delta_y)^2+(1/delta_x)^2)/(m^2+1))
+            matching_distance=max(m_dist,w*raw_distance*bottleneck_stretch)
 
-    return matching_distance
+    return m_dist
