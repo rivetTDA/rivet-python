@@ -1,4 +1,6 @@
 import numpy as np
+from atlatl import rivet, barcode, hera
+from atlatl.rivet import Point, PointCloud
 
 def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
     #Computes the approximate matching distance between two 2-Parameter persistence modules using
@@ -27,10 +29,11 @@ def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
     
     #First, use Fixed_Bounds to set the upper right corner and lower-left corner to be considered.
     if Fixed_Bounds!=[]:
+        Print(1)
         [LL,UR]=Fixed_Bounds
     else:
-        bounds1=bounds(mod1)
-        bounds2=bounds(mod2)
+        bounds1=rivet.bounds(mod1)
+        bounds2=rivet.bounds(mod2)
     
         #If Fixed_Bounds is empty (i.e., not specified) the algorithm chooses its own bounds, 
         #with the lower left bound taken to be the min for the two modules, 
