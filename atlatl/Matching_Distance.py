@@ -2,6 +2,28 @@ import numpy as np
 from atlatl import rivet, barcode, hera
 from atlatl.rivet import Point, PointCloud
 
+def find_offset(sl,pt)    
+    #find the offset parameter for the line of given slope passing through the point
+    #slope is in degrees
+    
+    m=np.tan(np.radians(sl)
+    # equation of line is y=mx+(pt[1]-pt[0]m)
+    # We want the point x,y which minimizes squared distance to origin.
+    #i.e., x^2(1+m^2)+2x(pt[1]m-pt[0]m^2)+c
+    # minimized when derivative is 0, i.e., 
+    # x=-2(pt[1]m-pt[0]m^2)/(1+m^2)
+
+    b=pt[1]-pt[0]*m
+    
+    x_minimizer=-2*(pt[1]*m-pt[0]*m^2)/(1+m^2)
+    y_minimizer=m*x_minimizer+b
+    unsigned_dist=np.sqrt(x_minimizer^2+y_minimizer^2)
+    
+    if b>0: 
+        return unsigned_dist
+    else:
+        return -unsigned_dist
+
 def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
     #Computes the approximate matching distance between two 2-Parameter persistence modules using
     #RIVET's command-line interface.
@@ -29,7 +51,6 @@ def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
     
     #First, use Fixed_Bounds to set the upper right corner and lower-left corner to be considered.
     if Fixed_Bounds!=[]:
-        Print(1)
         [LL,UR]=Fixed_Bounds
     else:
         bounds1=rivet.bounds(mod1)
@@ -38,15 +59,15 @@ def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
         #If Fixed_Bounds is empty (i.e., not specified) the algorithm chooses its own bounds, 
         #with the lower left bound taken to be the min for the two modules, 
         #and the upper right taken to be the max for the two modules.  
-        LL=[np.min(bounds1[0][0],bounds2[0][0]),np.min(bounds1[0][1],bounds2[0][1])] 
-        UR=[np.mmax(bounds1[1][0],bounds2[1][0]),np.max(bounds1[1][1],bounds2[1][1])] 
+        LL=[min(bounds1[0][0],bounds2[0][0]),min(bounds1[0][1],bounds2[0][1])]
+        UR=[max(bounds1[1][0],bounds2[1][0]),max(bounds1[1][1],bounds2[1][1])] 
     
     #Now we build up a list of the lines we consider in computing the matching distance.  
     #Each line is given as a (slope,offset) pair.
     List_Of_Lines=[];
     
     for i in range(Grid_Parameter):
-        sl=90*(k+1)/(Grid_Parameter+1)
+        sl=90*(i+1)/(Grid_Parameter+1)
     
         #find the offset parameters such that the lines with slope sl just touches the upper left corner of the box
         UL=[LL[1],UR[2]]
@@ -55,7 +76,7 @@ def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
         LR_Offset=find_offset(sl,LR)
         
         for j in range(Grid_Parameter):
-            offset=LR_Offset+(k+1)*(UL_Offset-LR_Offset)/(Grid_Parameter+1)    
+            offset=LR_Offset+(j+1)*(UL_Offset-LR_Offset)/(Grid_Parameter+1)    
             List_Of_Lines.append((sl,offset))
 
     #next, for each of the two 2-D persistence modules, get the barcode associated to the list of lines. 
