@@ -2,11 +2,11 @@ import numpy as np
 from atlatl import rivet, barcode, hera
 from atlatl.rivet import Point, PointCloud
 
-def find_offset(sl,pt)    
+def find_offset(sl,pt):    
     #find the offset parameter for the line of given slope passing through the point
     #slope is in degrees
     
-    m=np.tan(np.radians(sl)
+    m=np.tan(np.radians(sl))
     # equation of line is y=mx+(pt[1]-pt[0]m)
     # We want the point x,y which minimizes squared distance to origin.
     #i.e., x^2(1+m^2)+2x(pt[1]m-pt[0]m^2)+c
@@ -15,9 +15,9 @@ def find_offset(sl,pt)
 
     b=pt[1]-pt[0]*m
     
-    x_minimizer=-2*(pt[1]*m-pt[0]*m^2)/(1+m^2)
+    x_minimizer=-2*(pt[1]*m-pt[0]*m**2)/(1+m**2)
     y_minimizer=m*x_minimizer+b
-    unsigned_dist=np.sqrt(x_minimizer^2+y_minimizer^2)
+    unsigned_dist=np.sqrt(x_minimizer**2+y_minimizer**2)
     
     if b>0: 
         return unsigned_dist
@@ -104,7 +104,7 @@ def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
             
         if Normalize==False:       
             q=max(m,1/m)
-            w=1/np.sqrt(1+q^2)
+            w=1/np.sqrt(1+q**2)
                 
             m_dist=max(m_dist,w*raw_distance)
             
@@ -119,14 +119,14 @@ def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
             #so the associated weight in the normalized case is given by
             
             q=max(mn,1/mn)
-            w=1/np.sqrt(1+q^2)
+            w=1/np.sqrt(1+q**2)
             
             #of course, this code can be made more compact, but hopfully this way is readible    
                 
             #moreover, normalizaion changes the length of a line segment along the line (sl,offset), 
             #and hence also the bottleneck distance, by a factor of 
             
-            bottleneck_stretch=sqrt(((m/delta_y)^2+(1/delta_x)^2)/(m^2+1))
+            bottleneck_stretch=sqrt(((m/delta_y)**2+(1/delta_x)**2)/(m**2+1))
             matching_distance=max(m_dist,w*raw_distance*bottleneck_stretch)
 
     return m_dist
