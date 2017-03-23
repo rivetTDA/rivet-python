@@ -53,14 +53,14 @@ def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
     if Fixed_Bounds!=[]:
         [LL,UR]=Fixed_Bounds
     else:
-        bounds1=rivet.bounds(mod1)
-        bounds2=rivet.bounds(mod2)
+        bounds1=rivet.bounds(Mod1)
+        bounds2=rivet.bounds(Mod2)
     
         #If Fixed_Bounds is empty (i.e., not specified) the algorithm chooses its own bounds, 
         #with the lower left bound taken to be the min for the two modules, 
         #and the upper right taken to be the max for the two modules.  
-        LL=[min(bounds1[0][0],bounds2[0][0]),min(bounds1[0][1],bounds2[0][1])]
-        UR=[max(bounds1[1][0],bounds2[1][0]),max(bounds1[1][1],bounds2[1][1])] 
+        LL=[min(bounds1.lower[0],bounds2.lower[0]),min(bounds1.lower[1],bounds2.lower[1])]
+        UR=[max(bounds1.upper[0],bounds2.upper[0]),max(bounds1.upper[1],bounds2.upper[1])] 
     
     #Now we build up a list of the lines we consider in computing the matching distance.  
     #Each line is given as a (slope,offset) pair.
@@ -70,9 +70,9 @@ def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
         sl=90*(i+1)/(Grid_Parameter+1)
     
         #find the offset parameters such that the lines with slope sl just touches the upper left corner of the box
-        UL=[LL[1],UR[2]]
+        UL=[LL[0],UR[1]]
         UL_Offset=find_offset(sl,UL)
-        LR=[UR[1],LL[2]]
+        LR=[UR[0],LL[1]]
         LR_Offset=find_offset(sl,LR)
         
         for j in range(Grid_Parameter):
