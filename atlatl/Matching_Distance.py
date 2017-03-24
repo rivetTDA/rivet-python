@@ -112,9 +112,12 @@ def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
         #is given as follows
             
         if Normalize==True:  
-            delta_x=UR[1]-LL[1]
-            delta_y=UR[2]-LL[2]
+            delta_x=UR[0]-LL[0]
+            delta_y=UR[1]-LL[1]
+            if delta_y==0:
+                print('corner case where delta_y=0 not addressed.  expect a divide-by-0 problem')
             mn=m*delta_x/delta_y
+            
             
             #so the associated weight in the normalized case is given by
             
@@ -126,7 +129,7 @@ def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
             #moreover, normalizaion changes the length of a line segment along the line (sl,offset), 
             #and hence also the bottleneck distance, by a factor of 
             
-            bottleneck_stretch=sqrt(((m/delta_y)**2+(1/delta_x)**2)/(m**2+1))
-            matching_distance=max(m_dist,w*raw_distance*bottleneck_stretch)
+            bottleneck_stretch=np.sqrt(((m/delta_y)**2+(1/delta_x)**2)/(m**2+1))
+            m_dist=max(m_dist,w*raw_distance*bottleneck_stretch)
 
     return m_dist
