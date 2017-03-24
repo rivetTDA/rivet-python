@@ -16,7 +16,7 @@ class Bar(object):
         self.multiplicity = int(round(multiplicity))
 
     def __repr__(self):
-        return "Bar(%f, %f, %d)" % (self.start, self.end, self.multiplicity)
+        return "Bar(%s, %s, %d)" % (self.start, self.end, self.multiplicity)
 
     def expand(self):
         """Returns self.multiplicity copies of this bar,
