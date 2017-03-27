@@ -31,6 +31,7 @@ def bottleneck_distance(left,
                                    (bar.start, min(inf, bar.end))
                                    for _ in range(bar.multiplicity)])
             if relative_error is None:
+                #print("Calling without relative error")
                 dist = subprocess.check_output(["bottleneck_dist", t1_name, t2_name])
             else:
                 dist = subprocess.check_output(["bottleneck_dist", t1_name, t2_name, str(relative_error)])
