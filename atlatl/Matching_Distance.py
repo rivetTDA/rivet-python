@@ -94,7 +94,7 @@ def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
     for i in range(len(List_Of_Lines)):
         #first compute the unweighted distance between the pairs
         raw_distance=hera.bottleneck_distance(multi_bars1[i][1], multi_bars2[i][1])
-                       
+        # print("Raw: ", raw_distance)
         #To determine the weight to use for the line given by (sl,offset), we need to take into account both
         #the weight coming from slope of the line, and also the normalization, which changes both the effective 
         #weight and the effective bottleneck distance.
@@ -105,15 +105,17 @@ def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
         #distance between the slices is at most 1.
         
         sl=List_Of_Lines[i][0];
+        # print("slope: ", sl)
         m=np.tan(np.radians(sl))
+        #print("m: ", m)
             
         if Normalize==False:       
             q=max(m,1/m)
+            #print("q: ", q)
             w=1/np.sqrt(1+q**2)
-                
+            # print("w*raw_distance: ", w*raw_distance)
             m_dist=max(m_dist,w*raw_distance)
-            
-        #next, let's consider the normalized case.  If the unnormalized slope is sl, then the normalized slope 
+        #next, let's consider the normalized case.  If the unnormalized slope is sl, then the normalized slope
         #is given as follows
             
         if Normalize==True:  

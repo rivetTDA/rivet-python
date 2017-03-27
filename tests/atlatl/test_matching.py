@@ -70,7 +70,10 @@ y-axis label
 
 0 3 5 0 0 
 
-0 1 2 3 3
+0 1 2 4 0
+3 4 5 0 4
+
+1 3 5 3 3
 """
 
 def test_overlaps():
@@ -89,8 +92,12 @@ def test_overlaps():
         print(bounds1)
         bounds2 = rivet.bounds(mod2)
         print(bounds2)
-        dist = Matching_Distance.matching_distance(mod1, mod2, 3, False, [])
-
+        slices = [(89,0), (39.5, 0)]
+        print("mod1", rivet.barcodes(mod1, slices))
+        print("mod2", rivet.barcodes(mod2, slices))
+        for i in range(1, 21):
+            dist = Matching_Distance.matching_distance(mod1, mod2, i, False, [])
+            print("At ", i, " ", dist)
         assert dist == 1, dist
 
 
@@ -101,4 +108,5 @@ def test_find_offset():
     assert math.isclose(val, 3, abs_tol=1e-8)
     val = Matching_Distance.find_offset(math.degrees(math.atan(2)), (1, 3))
     assert math.isclose(val, 1, abs_tol=1e-8)
+
 
