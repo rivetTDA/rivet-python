@@ -79,14 +79,14 @@ def test_overlaps():
         with open(os.path.join(tempdir, 'mod2'), 'w') as f:
             f.write(prism_2)
 
-        pre1 = rivet.compute_file(os.path.join(tempdir, "mod1"))
+        pre1 = rivet.compute_file(os.path.join(tempdir, "mod1"), homology=1)
         mod1 = open(pre1, 'rb').read()
-        pre2 = rivet.compute_file(os.path.join(tempdir, "mod2"))
+        pre2 = rivet.compute_file(os.path.join(tempdir, "mod2"), homology=1)
         mod2 = open(pre2, 'rb').read()
         bounds1 = rivet.bounds(mod1)
         print(bounds1)
         bounds2 = rivet.bounds(mod2)
         print(bounds2)
-        dist = Matching_Distance.matching_distance(mod1, mod2, 11, False, [])
+        dist = Matching_Distance.matching_distance(mod1, mod2, 7, False, [])
 
         assert dist == 1, dist
