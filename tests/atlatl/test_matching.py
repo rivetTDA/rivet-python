@@ -2,6 +2,8 @@
 import os
 import tempfile
 
+import math
+
 from atlatl import rivet, hera, barcode, Matching_Distance
 
 inf = float('inf')
@@ -87,6 +89,16 @@ def test_overlaps():
         print(bounds1)
         bounds2 = rivet.bounds(mod2)
         print(bounds2)
-        dist = Matching_Distance.matching_distance(mod1, mod2, 7, False, [])
+        dist = Matching_Distance.matching_distance(mod1, mod2, 3, False, [])
 
         assert dist == 1, dist
+
+
+def test_find_offset():
+    val = Matching_Distance.find_offset(45, (3, 3))
+    assert math.isclose(val, 0, abs_tol=1e-8)
+    val = Matching_Distance.find_offset(0, (3, 3))
+    assert math.isclose(val, 3, abs_tol=1e-8)
+    val = Matching_Distance.find_offset(math.degrees(math.atan(2)), (1, 3))
+    assert math.isclose(val, 1, abs_tol=1e-8)
+
