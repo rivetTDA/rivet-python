@@ -128,19 +128,17 @@ def bounds(bytes):
 
 
 class Bounds:
-    def __init__(self, lower, upper, offset):
+    def __init__(self, lower, upper):
         self.lower = lower
         self.upper = upper
-        self.offset = offset
 
     def __repr__(self):
-        return "Bounds(%s, %s, %s)" % (self.lower, self.upper, self.offset)
+        return "Bounds(%s, %s)" % (self.lower, self.upper)
 
 
 def parse_bounds(lines):
     low = (0, 0)
     high = (0, 0)
-    offset = (0, 0)
     for line in lines:
         line = str(line, 'utf-8')
         line = line.strip()
@@ -149,11 +147,8 @@ def parse_bounds(lines):
             low = tuple(map(float, parts))
         if line.startswith('high:'):
             parts = line[6:].split(",")
-            offset = tuple(map(float, parts))
-        if line.startswith('offset:'):
-            parts = line[8:].split(",")
             high = tuple(map(float, parts))
-    return Bounds(low, high, offset)
+    return Bounds(low, high)
 
 
 class Dimensions:

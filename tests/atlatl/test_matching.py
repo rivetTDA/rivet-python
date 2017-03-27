@@ -83,6 +83,10 @@ def test_overlaps():
         mod1 = open(pre1, 'rb').read()
         pre2 = rivet.compute_file(os.path.join(tempdir, "mod2"))
         mod2 = open(pre2, 'rb').read()
-        dist = Matching_Distance.matching_distance(mod1, mod2, 11, True, [])
+        bounds1 = rivet.bounds(mod1)
+        print(bounds1)
+        bounds2 = rivet.bounds(mod2)
+        print(bounds2)
+        dist = Matching_Distance.matching_distance(mod1, mod2, 11, False, [])
 
         assert dist == 1, dist
