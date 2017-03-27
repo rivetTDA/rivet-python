@@ -30,7 +30,10 @@ def bottleneck_distance(left,
                     t2.writelines(["%s %s\n" %
                                    (bar.start, min(inf, bar.end))
                                    for _ in range(bar.multiplicity)])
-            dist = subprocess.check_output(["bottleneck_dist", t1_name, t2_name, str(relative_error)])
+            if relative_error is None:
+                dist = subprocess.check_output(["bottleneck_dist", t1_name, t2_name])
+            else:
+                dist = subprocess.check_output(["bottleneck_dist", t1_name, t2_name, str(relative_error)])
             # print("Distance: ", dist)
             return min(cap, float(dist))
 
