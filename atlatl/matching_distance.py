@@ -99,33 +99,35 @@ def matching_distance(module1, module2, grid_size, normalize, fixed_bounds=None)
     multi_bars1 = rivet.barcodes(module1, lines)
     multi_bars2 = rivet.barcodes(module2, lines)
 
+    # first compute the unweighted distance between the pairs
+    raw_distances = hera.multi_bottleneck_distance(
+        [bars for (_, bars) in multi_bars1],
+        [bars for (_, bars) in multi_bars2]
+    )
     # now compute matching distance
     m_dist = 0
 
-    for i in range(len(lines)):
-        # first compute the unweighted distance between the pairs
-        raw_distance = hera.bottleneck_distance(
-            multi_bars1[i][1], multi_bars2[i][1])
-        # To determine the weight to use for the line given by (slope,offset), we need to take into account both
-        # the weight coming from slope of the line, and also the normalization, which changes both the effective
+    for (slope, _), raw_distance in zip(lines, raw_distances):
+        # To determine the weight to use for the line given by (slope,offset),
+        # we need to take into account both the weight coming from slope of
+        # the line, and also the normalization, which changes both the effective
         # weight and the effective bottleneck distance.
 
-        # first, let's recall how the reweighting works in the unnormalized case.  According to the
-        # definition of the matching distance, we choose
-        # the weight so that if the interleaving distance between Mod1 and Mod2 is 1, then the weighted bottleneck
-        # distance between the slices is at most 1.
+        # first, let's recall how the re-weighting works in the un-normalized case.
+        # According to the definition of the matching distance, we choose
+        # the weight so that if the interleaving distance between Mod1 and Mod2
+        # is 1, then the weighted bottleneck distance between the slices is at most 1.
 
-        slope = lines[i][0]
         m = np.tan(np.radians(slope))
 
         if not normalize:
             q = max(m, 1 / m)
             w = 1 / np.sqrt(1 + q**2)
             m_dist = max(m_dist, w * raw_distance)
-        # next, let's consider the normalized case.  If the unnormalized slope is slope, then the normalized slope
-        # is given as follows
 
-        if normalize:
+        else:
+            # next, let's consider the normalized case. If the un-normalized slope
+            # is `slope`, then the normalized slope is given as follows
             delta_x = UR[0] - LL[0]
             delta_y = UR[1] - LL[1]
             if delta_y == 0:
@@ -134,7 +136,6 @@ def matching_distance(module1, module2, grid_size, normalize, fixed_bounds=None)
             mn = m * delta_x / delta_y
 
             # so the associated weight in the normalized case is given by
-
             q = max(mn, 1 / mn)
             w = 1 / np.sqrt(1 + q**2)
 
