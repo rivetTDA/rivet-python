@@ -52,8 +52,8 @@ class PointCloud:
             out.writelines(["# " + line + "\n"
                             for line in str(self.comments).split("\n")])
         out.write("points\n")
-        out.write(str(self.dimension)+"\n")
-        out.write(str(self.max_dist)+"\n")
+        out.write(str(self.dimension) + "\n")
+        out.write(str(self.max_dist) + "\n")
         out.write(self.second_param_name + "\n")
         for p in self.points:
             for c in p.coords:
@@ -71,7 +71,8 @@ class Bifiltration:
         self.points = points
         for p in self.points:
             if not hasattr(p.appearance, '__len__') or len(p.appearance) != 2:
-                raise ValueError("For a bifiltration, points must have a 2-tuple in the appearance field")
+                raise ValueError(
+                    "For a bifiltration, points must have a 2-tuple in the appearance field")
 
     def save(self, out):
         out.write('bifiltration\n')
@@ -143,7 +144,9 @@ def compute_file(name, output_name=None, homology=0, x=0, y=0):
 
 def barcodes_file(name, slice_name):
     cmd = "%s %s --barcodes %s" % (rivet_executable, name, slice_name)
-    return _parse_slices(subprocess.check_output(shlex.split(cmd)).split(b'\n'))
+    return _parse_slices(
+        subprocess.check_output(
+            shlex.split(cmd)).split(b'\n'))
 
 
 def betti_file(name, x=0, y=0):
@@ -199,8 +202,8 @@ class Dimensions:
 
     def __eq__(self, other):
         return isinstance(other, Dimensions) \
-               and self.x_grades == other.x_grades \
-               and self.y_grades == other.y_grades
+            and self.x_grades == other.x_grades \
+            and self.y_grades == other.y_grades
 
 
 class MultiBetti:

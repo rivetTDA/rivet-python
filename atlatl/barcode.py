@@ -29,6 +29,7 @@ class Bar(object):
 
 class Barcode(object):
     """A collection of bars"""
+
     def __init__(self, bars=None):
         if bars is None:
             bars = []
