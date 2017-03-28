@@ -78,7 +78,7 @@ def offset(bifiltration: rivet.Bifiltration, x, y):
 def test_overlaps_grid_5b():
     mod1 = rivet.compute_bifiltration(prism_1b, homology=1)
     mod2 = rivet.compute_bifiltration(prism_2b, homology=1)
-    dist = Matching_Distance.matching_distance(mod1, mod2, 5, False, [])
+    dist = Matching_Distance.matching_distance(mod1, mod2, 5, False)
     print("5", dist)
     assert math.isclose(dist, 1, abs_tol=1e-5)
 
@@ -92,7 +92,7 @@ def test_overlaps_offset_grid_5b():
     print("p2:")
     p2.save(sys.stdout)
     mod2 = rivet.compute_bifiltration(p2, homology=1)
-    dist = Matching_Distance.matching_distance(mod1, mod2, 50, False, [])
+    dist = Matching_Distance.matching_distance(mod1, mod2, 50, False)
     print("50", dist)
     assert math.isclose(dist, 1, abs_tol=1e-1)
 
@@ -100,7 +100,7 @@ def test_overlaps_offset_grid_5b():
 def test_overlaps_grid_50b():
     mod1 = rivet.compute_bifiltration(prism_1b, homology=1)
     mod2 = rivet.compute_bifiltration(prism_2b, homology=1)
-    dist = Matching_Distance.matching_distance(mod1, mod2, 50, False, [])
+    dist = Matching_Distance.matching_distance(mod1, mod2, 50, False)
     print("50", dist)
     assert math.isclose(dist, 1, abs_tol=1e-1)
 
