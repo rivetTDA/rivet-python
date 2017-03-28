@@ -64,6 +64,30 @@ class PointCloud:
         out.write("\n")
 
 
+class Bifiltration:
+    def __init__(self, x_label, y_label, points):
+        self.x_label = x_label
+        self.y_label = y_label
+        self.points = points
+        for p in self.points:
+            if not hasattr(p.appearance, '__len__') or len(p.appearance) != 2:
+                raise ValueError("For a bifiltration, points must have a 2-tuple in the appearance field")
+
+    def save(self, out):
+        out.write('bifiltration\n')
+        out.write(self.x_label + '\n')
+        out.write(self.y_label + '\n')
+        for p in self.points:
+            for c in p.coords:
+                out.write(str(c))
+                out.write(" ")
+            for b in p.appearance:
+                out.write(str(b))
+                out.write(" ")
+            out.write("\n")
+        out.write("\n")
+
+
 def compute_point_cloud(cloud, homology=0, x=0, y=0, verify=False):
     with tempfile.TemporaryDirectory() as dir:
         cloud_file_name = os.path.join(dir, 'points.txt')
@@ -71,6 +95,20 @@ def compute_point_cloud(cloud, homology=0, x=0, y=0, verify=False):
             cloud.save(cloud_file)
         output_name = compute_file(cloud_file_name,
                                    homology=homology, x=x, y=y)
+        with open(output_name, 'rb') as output_file:
+            output = output_file.read()
+        if verify:
+            assert bounds(output)
+        return output
+
+
+def compute_bifiltration(bifiltration, homology=0, verify=False):
+    with tempfile.TemporaryDirectory() as dir:
+        bifiltration_name = os.path.join(dir, 'points.txt')
+        with open(bifiltration_name, 'w+t') as bifiltration_file:
+            bifiltration.save(bifiltration_file)
+        output_name = compute_file(bifiltration_name,
+                                   homology=homology)
         with open(output_name, 'rb') as output_file:
             output = output_file.read()
         if verify:

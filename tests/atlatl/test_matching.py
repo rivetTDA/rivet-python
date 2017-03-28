@@ -4,6 +4,8 @@ import tempfile
 
 import math
 
+import sys
+
 from atlatl import rivet, hera, barcode, Matching_Distance
 
 inf = float('inf')
@@ -26,80 +28,81 @@ def assert_barcodes(cloud, dim, buckets, angle, offset, barcodes):
         assert codes == barcodes
 
 
-# def test_point_cloud_1():
-#     barcodes = barcode.Barcode([
-#         barcode.Bar(0, 1, 3),
-#         barcode.Bar(0, inf, 1)
-#     ])
-#     assert_barcodes(cloud_1, 0, 0, 0, 0, barcodes=barcodes)
+prism_1b = rivet.Bifiltration("x_label", "y_label", [
+    rivet.Point((1, 0), 0, 1),
+    rivet.Point((1, 0), 0, 2),
+    rivet.Point((1, 0), 1, 2),
 
-prism_1 ="""
-bifiltration
-x-axis label
-y-axis label
-0 1 1 0
-0 2 1 0
-1 2 1 0
+    rivet.Point((0, 1), 3, 4),
+    rivet.Point((0, 1), 4, 5),
+    rivet.Point((0, 1), 3, 5),
 
-3 4 0 1
-4 5 0 1
-3 5 0 1
+    rivet.Point((1, 1), 1, 2, 4),
+    rivet.Point((1, 1), 2, 4, 5),
+    rivet.Point((1, 1), 0, 1, 3),
+    rivet.Point((1, 1), 1, 3, 4),
+    rivet.Point((1, 1), 0, 2, 5),
+    rivet.Point((1, 1), 0, 3, 5),
 
-1 2 4 1 1
-2 4 5 1 1
-0 1 3 1 1
-1 3 4 1 1
-0 2 5 1 1
+    rivet.Point((4, 0), 0, 1, 2),
+    rivet.Point((0, 4), 3, 4, 5)
+])
 
-0 3 5 1 1
-0 1 2 4 0 
-3 4 5 0 4
+prism_2b = rivet.Bifiltration("x_label", "y_label", [
+    rivet.Point((0, 0), 1, 2, 4),
+    rivet.Point((0, 0), 2, 4, 5),
+    rivet.Point((0, 0), 0, 1, 3),
+    rivet.Point((0, 0), 1, 3, 4),
+    rivet.Point((0, 0), 0, 2, 3),
+    rivet.Point((0, 0), 2, 5, 3),
+    rivet.Point((4, 0), 0, 1, 2),
+    rivet.Point((0, 4), 3, 4, 5),
+    rivet.Point((3, 3), 2, 4, 3)
+])
 
-"""
 
-prism_2 = """
-bifiltration
-x-axis label
-y-axis label
+def offset_tup(tup, x, y):
+    ox, oy = tup
+    return ox + x, oy + y
 
-1 2 4 0 0
-2 4 5 0 0
-0 1 3 0 0
-1 3 4 0 0
-0 2 3 0 0
 
-2 5 3 0 0
+def offset_point(point: rivet.Point, x, y):
+    return rivet.Point(offset_tup(point.appearance, x, y), *point.coords)
 
-0 1 2 4 0
-3 4 5 0 4
 
-2 4 3 3 3
+def offset(bifiltration: rivet.Bifiltration, x, y):
+    return rivet.Bifiltration(bifiltration.x_label, bifiltration.y_label,
+                              [offset_point(p, x, y) for p in bifiltration.points])
 
-"""
 
-def test_overlaps():
-    with tempfile.TemporaryDirectory() as tempdir:
-        with open(os.path.join(tempdir, 'mod1'), 'w') as f:
-            f.write(prism_1)
+def test_overlaps_grid_5b():
+    mod1 = rivet.compute_bifiltration(prism_1b, homology=1)
+    mod2 = rivet.compute_bifiltration(prism_2b, homology=1)
+    dist = Matching_Distance.matching_distance(mod1, mod2, 5, False, [])
+    print("5", dist)
+    assert math.isclose(dist, 1, abs_tol=1e-5)
 
-        with open(os.path.join(tempdir, 'mod2'), 'w') as f:
-            f.write(prism_2)
 
-        pre1 = rivet.compute_file(os.path.join(tempdir, "mod1"), homology=1)
-        mod1 = open(pre1, 'rb').read()
-        pre2 = rivet.compute_file(os.path.join(tempdir, "mod2"), homology=1)
-        mod2 = open(pre2, 'rb').read()
-        bounds1 = rivet.bounds(mod1)
-        print(bounds1)
-        bounds2 = rivet.bounds(mod2)
-        print(bounds2)
-        slices = [(89,0), (39.5, 0)]
-        print("mod1", rivet.barcodes(mod1, slices))
-        print("mod2", rivet.barcodes(mod2, slices))
-        for i in range(1, 21):
-            dist = Matching_Distance.matching_distance(mod1, mod2, i, False, [])
-            print("At ", i, " ", dist)
-        assert dist == 1, dist
+def test_overlaps_offset_grid_5b():
+    p1 = offset(prism_1b, 3, 5)
+    print("p1:")
+    p1.save(sys.stdout)
+    mod1 = rivet.compute_bifiltration(p1, homology=1)
+    p2 = offset(prism_2b, 3, 5)
+    print("p2:")
+    p2.save(sys.stdout)
+    mod2 = rivet.compute_bifiltration(p2, homology=1)
+    dist = Matching_Distance.matching_distance(mod1, mod2, 50, False, [])
+    print("50", dist)
+    assert math.isclose(dist, 1, abs_tol=1e-1)
+
+
+def test_overlaps_grid_50b():
+    mod1 = rivet.compute_bifiltration(prism_1b, homology=1)
+    mod2 = rivet.compute_bifiltration(prism_2b, homology=1)
+    dist = Matching_Distance.matching_distance(mod1, mod2, 50, False, [])
+    print("50", dist)
+    assert math.isclose(dist, 1, abs_tol=1e-1)
 
 
 def test_find_offset():

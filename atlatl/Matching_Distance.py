@@ -57,7 +57,8 @@ def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
         #and the upper right taken to be the max for the two modules.  
         LL=[min(bounds1.lower[0],bounds2.lower[0]),min(bounds1.lower[1],bounds2.lower[1])]
         UR=[max(bounds1.upper[0],bounds2.upper[0]),max(bounds1.upper[1],bounds2.upper[1])] 
-    
+    # print("LL", LL)
+    # print("UR", UR)
     #Now we build up a list of the lines we consider in computing the matching distance.  
     #Each line is given as a (slope,offset) pair.
     List_Of_Lines=[];
@@ -67,12 +68,17 @@ def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
         #we do not however consider the values 0 and 90, since in view of stability considerations
         #these are not considered in the definition of the matching distance.  
         sl=90*(i+1)/(Grid_Parameter+1)
+        # print("slope", sl)
         
         #find the offset parameters such that the lines with slope sl just touches the upper left corner of the box
         UL=[LL[0],UR[1]]
         UL_Offset=find_offset(sl,UL)
         LR=[UR[0],LL[1]]
         LR_Offset=find_offset(sl,LR)
+        # print("UL", UL)
+        # print("LR", LR)
+        # print("UL_offset", UL_Offset)
+        # print("LR_offset", LR_Offset)
         
         #Choose the values of offset for this particular choice of sl.
         if Grid_Parameter==1:
@@ -81,12 +87,15 @@ def matching_distance(Mod1,Mod2,Grid_Parameter,Normalize,Fixed_Bounds):
         #the upper left and lower right corners of the rectangular region of interest.
         else:
             for j in range(Grid_Parameter):
-                offset=LR_Offset+j*(UL_Offset-LR_Offset)/(Grid_Parameter-1)    
+                offset=LR_Offset+j*(UL_Offset-LR_Offset)/(Grid_Parameter-1)
+                # print("offset", offset)
                 List_Of_Lines.append((sl,offset))
 
     #next, for each of the two 2-D persistence modules, get the barcode associated to the list of lines. 
     multi_bars1=rivet.barcodes(Mod1,List_Of_Lines)
-    multi_bars2=rivet.barcodes(Mod2,List_Of_Lines)  
+    # print(len(List_Of_Lines))
+    multi_bars2=rivet.barcodes(Mod2,List_Of_Lines)
+    # print(len(List_Of_Lines))
     
     #now compute matching distance
     m_dist=0
