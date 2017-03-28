@@ -69,6 +69,9 @@ def matching_distance(module1, module2, grid_size, normalize, fixed_bounds=None)
     # Each line is given as a (slope,offset) pair.
     lines = []
 
+    UL = [LL[0], UR[1]]
+    LR = [UR[0], LL[1]]
+
     for i in range(grid_size):
         # We will choose `grid_parameter` slopes between 0 and 90;
         # we do not however consider the values 0 and 90, since in view of stability considerations
@@ -77,9 +80,7 @@ def matching_distance(module1, module2, grid_size, normalize, fixed_bounds=None)
 
         # find the offset parameters such that the lines with slope slope just
         # touches the upper left corner of the box
-        UL = [LL[0], UR[1]]
         UL_offset = find_offset(slope, UL)
-        LR = [UR[0], LL[1]]
         LR_offset = find_offset(slope, LR)
 
         # Choose the values of offset for this particular choice of slope.
@@ -104,10 +105,16 @@ def matching_distance(module1, module2, grid_size, normalize, fixed_bounds=None)
         [bars for (_, bars) in multi_bars1],
         [bars for (_, bars) in multi_bars2]
     )
+
+    return calculate_match(zip(lines, raw_distances), normalize, (LL, UR))
+
+
+def calculate_match(line_distances, normalize, corners):
+    LL, UR = corners
     # now compute matching distance
     m_dist = 0
 
-    for (slope, _), raw_distance in zip(lines, raw_distances):
+    for (slope, _), raw_distance in line_distances:
         # To determine the weight to use for the line given by (slope,offset),
         # we need to take into account both the weight coming from slope of
         # the line, and also the normalization, which changes both the effective
@@ -149,3 +156,4 @@ def matching_distance(module1, module2, grid_size, normalize, fixed_bounds=None)
             m_dist = max(m_dist, w * raw_distance * bottleneck_stretch)
 
     return m_dist
+
