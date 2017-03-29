@@ -2,7 +2,7 @@ import subprocess
 import tempfile
 import os
 import numpy as np
-
+import socket
 # note we use a constant instead of inf because of a bug in bottleneck_dist.
 
 
@@ -75,11 +75,22 @@ def multi_bottleneck_distance(lefts,
                                    (bar.start, min(inf, bar.end))
                                    for _ in range(bar.multiplicity)])
                 t2.write("--\n")
-        if relative_error is None:
-            dists = subprocess.check_output(["bottleneck_dist", t1_name, t2_name])
-        else:
-            dists = subprocess.check_output(
-                ["bottleneck_dist", t1_name, t2_name, str(relative_error)])
+        try:
+            if relative_error is None:
+                dists = subprocess.check_output(["bottleneck_dist", t1_name, t2_name])
+            else:
+                dists = subprocess.check_output(
+                    ["bottleneck_dist", t1_name, t2_name, str(relative_error)])
+        except Exception as e:
+            error_dir = "error-hera-%s-%d" % (socket.gethostname(), os.getpid())
+            os.mkdir(error_dir)
+            with open(os.path.join(error_dir, 'self.txt'), 'wt') as f:
+                f.write(open(t1_name, 'rt').read())
+            with open(os.path.join(error_dir, 'other.txt'), 'wt') as f:
+                f.write(open(t2_name, 'rt').read())
+            logging.error("Failure in invocation of Hera, input files copied to %s for reference",
+                          error_dir, exc_info=e)
+            raise
         return [min(cap, float(d)) for d in dists.splitlines()]
 
 # note we use a constant instead of inf because of a bug in bottleneck_dist.
