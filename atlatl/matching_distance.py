@@ -26,6 +26,16 @@ def find_offset(sl, pt):
         return -unsigned_dist
 
 
+def common_bounds(bounds1: rivet.Bounds, bounds2: rivet.Bounds):
+    # the lower left bound taken to be the min for the two modules,
+    # and the upper right taken to be the max for the two modules.
+    LL = [min(bounds1.lower[0], bounds2.lower[0]),
+          min(bounds1.lower[1], bounds2.lower[1])]
+    UR = [max(bounds1.upper[0], bounds2.upper[0]),
+          max(bounds1.upper[1], bounds2.upper[1])]
+    return rivet.Bounds(LL, UR)
+
+
 def matching_distance(module1, module2, grid_size, normalize, fixed_bounds=None):
     """Computes the approximate matching distance between two 2-parameter persistence modules using
     RIVET's command-line interface.
@@ -42,33 +52,27 @@ def matching_distance(module1, module2, grid_size, normalize, fixed_bounds=None)
             chosen to simulate the situation where
             the coordinates are rescaled so that UR-LL=[1,1]?
 
-        fixed_bounds is a list, or None. If provided, fixed_bounds can be a pair 
-            of numbers [LL,UR] which specifies the bounds to work with.
+        fixed_bounds is a rivet.Bounds, or None. If provided, fixed_bounds 
+            specifies the bounds to work with.
             The purpose of this latter option is to allow the user to compute 
             matching distances with uniform precision over a large collection of 2-D 
             persistence modules, which may exhibit features at different scales.
     """
     # First, use fixed_bounds to set the upper right corner and lower-left
     # corner to be considered.
-    if fixed_bounds is not None:
-        [LL, UR] = fixed_bounds
-    else:
+    if fixed_bounds is None:
+        # otherwise, determine bounds from the bounds of the two modules
         bounds1 = rivet.bounds(module1)
         bounds2 = rivet.bounds(module2)
-
-        # If fixed_bounds is empty (i.e., not specified) the algorithm chooses its own bounds,
-        # with the lower left bound taken to be the min for the two modules,
-        # and the upper right taken to be the max for the two modules.
-        LL = [min(bounds1.lower[0], bounds2.lower[0]),
-              min(bounds1.lower[1], bounds2.lower[1])]
-        UR = [max(bounds1.upper[0], bounds2.upper[0]),
-              max(bounds1.upper[1], bounds2.upper[1])]
+        fixed_bounds = common_bounds(bounds1, bounds2)
+    LL = fixed_bounds.lower
+    UR = fixed_bounds.upper
+    UL = [LL[0], UR[1]]
+    LR = [UR[0], LL[1]]
     # print("LL", LL)
     # print("UR", UR)
     # Now we build up a list of the lines we consider in computing the matching distance.
     # Each line is given as a (slope,offset) pair.
-    UL = [LL[0], UR[1]]
-    LR = [UR[0], LL[1]]
     lines = generate_lines(grid_size, UL, LR)
 
 
