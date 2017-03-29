@@ -67,11 +67,28 @@ def matching_distance(module1, module2, grid_size, normalize, fixed_bounds=None)
     # print("UR", UR)
     # Now we build up a list of the lines we consider in computing the matching distance.
     # Each line is given as a (slope,offset) pair.
-    lines = []
-
     UL = [LL[0], UR[1]]
     LR = [UR[0], LL[1]]
+    lines = generate_lines(grid_size, UL, LR)
 
+
+
+    # next, for each of the two 2-D persistence modules, get the barcode
+    # associated to the list of lines.
+    multi_bars1 = rivet.barcodes(module1, lines)
+    multi_bars2 = rivet.barcodes(module2, lines)
+
+    # first compute the unweighted distance between the pairs
+    raw_distances = hera.multi_bottleneck_distance(
+        [bars for (_, bars) in multi_bars1],
+        [bars for (_, bars) in multi_bars2]
+    )
+
+    return calculate_match(zip(lines, raw_distances), normalize, LL, UR)
+
+
+def generate_lines(grid_size, UL, LR):
+    lines = []
     for i in range(grid_size):
         # We will choose `grid_parameter` slopes between 0 and 90;
         # we do not however consider the values 0 and 90, since in view of stability considerations
@@ -92,25 +109,12 @@ def matching_distance(module1, module2, grid_size, normalize, fixed_bounds=None)
         else:
             for j in range(grid_size):
                 offset = LR_offset + j * \
-                    (UL_offset - LR_offset) / (grid_size - 1)
+                                     (UL_offset - LR_offset) / (grid_size - 1)
                 lines.append((slope, offset))
-
-    # next, for each of the two 2-D persistence modules, get the barcode
-    # associated to the list of lines.
-    multi_bars1 = rivet.barcodes(module1, lines)
-    multi_bars2 = rivet.barcodes(module2, lines)
-
-    # first compute the unweighted distance between the pairs
-    raw_distances = hera.multi_bottleneck_distance(
-        [bars for (_, bars) in multi_bars1],
-        [bars for (_, bars) in multi_bars2]
-    )
-
-    return calculate_match(zip(lines, raw_distances), normalize, (LL, UR))
+    return lines
 
 
-def calculate_match(line_distances, normalize, corners):
-    LL, UR = corners
+def calculate_match(line_distances, normalize, LL, UR):
     # now compute matching distance
     m_dist = 0
 
