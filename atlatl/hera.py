@@ -75,8 +75,11 @@ def multi_bottleneck_distance(lefts,
                                    (bar.start, min(inf, bar.end))
                                    for _ in range(bar.multiplicity)])
                 t2.write("--\n")
-        dists = subprocess.check_output(
-            ["bottleneck_dist", t1_name, t2_name, str(relative_error)])
+        if relative_error is None:
+            dists = subprocess.check_output(["bottleneck_dist", t1_name, t2_name])
+        else:
+            dists = subprocess.check_output(
+                ["bottleneck_dist", t1_name, t2_name, str(relative_error)])
         return [min(cap, float(d)) for d in dists.splitlines()]
 
 # note we use a constant instead of inf because of a bug in bottleneck_dist.
@@ -124,6 +127,9 @@ def array_bottleneck_distance(lefts,
                                    (one_bar[0], min(inf, one_bar[1]))] *
                                   int(one_bar[2]))
                 t2.write("--\n")
-        dists = subprocess.check_output(
-            ["bottleneck_dist", t1_name, t2_name, str(relative_error)])
+        if relative_error is None:
+            dists = subprocess.check_output(["bottleneck_dist", t1_name, t2_name])
+        else:
+            dists = subprocess.check_output(
+                ["bottleneck_dist", t1_name, t2_name, str(relative_error)])
         return np.array([min(cap, float(d)) for d in dists.splitlines()])
