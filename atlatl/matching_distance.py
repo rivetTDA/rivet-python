@@ -67,15 +67,13 @@ def matching_distance(module1, module2, grid_size, normalize, fixed_bounds=None)
         fixed_bounds = common_bounds(bounds1, bounds2)
     LL = fixed_bounds.lower
     UR = fixed_bounds.upper
-    UL = [LL[0], UR[1]]
-    LR = [UR[0], LL[1]]
+    UL = (LL[0], UR[1])
+    LR = (UR[0], LL[1])
     # print("LL", LL)
     # print("UR", UR)
     # Now we build up a list of the lines we consider in computing the matching distance.
     # Each line is given as a (slope,offset) pair.
     lines = generate_lines(grid_size, UL, LR)
-
-
 
     # next, for each of the two 2-D persistence modules, get the barcode
     # associated to the list of lines.
@@ -88,10 +86,12 @@ def matching_distance(module1, module2, grid_size, normalize, fixed_bounds=None)
         [bars for (_, bars) in multi_bars2]
     )
 
-    return calculate_match(zip(lines, raw_distances), normalize, LL, UR)
+    delta_x = UR[0] - LL[0]
+    delta_y = UR[1] - LL[1]
+    return calculate_match(zip(lines, raw_distances), normalize, delta_x, delta_y)
 
 
-def generate_lines(grid_size, UL, LR):
+def generate_lines(grid_size, upper_left, lower_right):
     lines = []
     for i in range(grid_size):
         # We will choose `grid_parameter` slopes between 0 and 90;
@@ -101,8 +101,8 @@ def generate_lines(grid_size, UL, LR):
 
         # find the offset parameters such that the lines with slope slope just
         # touches the upper left corner of the box
-        UL_offset = find_offset(slope, UL)
-        LR_offset = find_offset(slope, LR)
+        UL_offset = find_offset(slope, upper_left)
+        LR_offset = find_offset(slope, lower_right)
 
         # Choose the values of offset for this particular choice of slope.
         if grid_size == 1:
@@ -118,7 +118,7 @@ def generate_lines(grid_size, UL, LR):
     return lines
 
 
-def calculate_match(line_distances, normalize, LL, UR):
+def calculate_match(line_distances, normalize, delta_x, delta_y):
     # now compute matching distance
     m_dist = 0
 
@@ -143,8 +143,6 @@ def calculate_match(line_distances, normalize, LL, UR):
         else:
             # next, let's consider the normalized case. If the un-normalized slope
             # is `slope`, then the normalized slope is given as follows
-            delta_x = UR[0] - LL[0]
-            delta_y = UR[1] - LL[1]
             if delta_y == 0:
                 print(
                     'corner case where delta_y=0 not addressed.  expect a divide-by-0 problem')
