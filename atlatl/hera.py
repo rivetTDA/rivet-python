@@ -122,7 +122,7 @@ def array_bottleneck_distance(lefts,
             for code in range(lefts.shape[0]):
                 for bar in range(lefts.shape[1]):
                     one_bar = lefts[code, bar, :]
-                    if np.isnan(one_bar[2]):
+                    if np.isnan(one_bar[2]) or one_bar[0] == one_bar[1]:
                         continue
                     t1.writelines(["%s %s\n" %
                                    (one_bar[0], min(inf, one_bar[1]))] *
@@ -132,7 +132,7 @@ def array_bottleneck_distance(lefts,
             for code in range(rights.shape[0]):
                 for bar in range(rights.shape[1]):
                     one_bar = rights[code, bar, :]
-                    if np.isnan(one_bar[2]):
+                    if np.isnan(one_bar[2]) or one_bar[0] == one_bar[1]:
                         continue
                     t2.writelines(["%s %s\n" %
                                    (one_bar[0], min(inf, one_bar[1]))] *
