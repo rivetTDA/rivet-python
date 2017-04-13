@@ -138,8 +138,8 @@ def compute_file(name, output_name=None, homology=0, x=0, y=0):
         output_name = _rivet_name(name, homology, x, y)
     cmd = "%s %s %s -H %d -x %d -y %d" % \
           (rivet_executable, name, output_name, homology, x, y)
-    if not subprocess.check_call(shlex.split(cmd)):
-        return output_name
+    subprocess.check_output(shlex.split(cmd))
+    return output_name
 
 
 def barcodes_file(name, slice_name):

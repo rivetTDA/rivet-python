@@ -112,8 +112,7 @@ def generate_lines(grid_size, upper_left, lower_right):
         # interest.
         else:
             for j in range(grid_size):
-                offset = LR_offset + j * \
-                                     (UL_offset - LR_offset) / (grid_size - 1)
+                offset = LR_offset + j * (UL_offset - LR_offset) / (grid_size - 1)
                 lines.append((slope, float(offset)))
     return lines
 

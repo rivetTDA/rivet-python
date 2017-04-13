@@ -1,6 +1,8 @@
 import subprocess
 import tempfile
 import os
+
+import logging
 import numpy as np
 import socket
 # note we use a constant instead of inf because of a bug in bottleneck_dist.
