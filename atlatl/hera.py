@@ -189,3 +189,52 @@ def wasserstein_distance(left,
 # note we use a constant instead of inf because of a bug in wasserstein_dist.
 
 
+def array_wasserstein_distance(lefts,
+                               rights,
+                               degree,
+                               inf=1e10,
+                               cap=10,
+                               # Needed to keep hera from crashing, which it
+                               # does on some inputs with
+                               relative_error=1e-10
+                               # default relative_error. This default value is
+                               # high enough to prevent it.
+                               ):
+    if len(lefts.shape) != 3:
+        raise ValueError(
+            "`lefts` must have shape (# of barcodes, # of bars in each code, 3)")
+    if len(rights.shape) != 3:
+        raise ValueError(
+            "`rights` must have shape (# of barcodes, # of bars in each code, 3)")
+    if lefts.shape[0] != rights.shape[0]:
+        raise ValueError(
+            "First dimension of both arrays must have the same length")
+    with tempfile.TemporaryDirectory() as temp:
+        t1_name = os.path.join(temp, 'self.txt')
+        t2_name = os.path.join(temp, 'other.txt')
+        with open(t1_name, 'wt') as t1:
+            for code in range(lefts.shape[0]):
+                for bar in range(lefts.shape[1]):
+                    one_bar = lefts[code, bar, :]
+                    if np.isnan(one_bar[2]) or one_bar[0] == one_bar[1]:
+                        continue
+                    t1.writelines(["%s %s\n" %
+                                   (one_bar[0], min(inf, one_bar[1]))] *
+                                  int(one_bar[2]))
+                t1.write("--\n")
+        with open(t2_name, 'wt') as t2:
+            for code in range(rights.shape[0]):
+                for bar in range(rights.shape[1]):
+                    one_bar = rights[code, bar, :]
+                    if np.isnan(one_bar[2]) or one_bar[0] == one_bar[1]:
+                        continue
+                    t2.writelines(["%s %s\n" %
+                                   (one_bar[0], min(inf, one_bar[1]))] *
+                                  int(one_bar[2]))
+                t2.write("--\n")
+        if relative_error is None:
+            dists = subprocess.check_output(["wasserstein_dist", t1_name, t2_name])
+        else:
+            dists = subprocess.check_output(
+                ["wasserstein_dist", t1_name, t2_name, str(relative_error)])
+        return np.array([min(cap, float(d)) for d in dists.splitlines()])
