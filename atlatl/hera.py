@@ -146,3 +146,46 @@ def array_bottleneck_distance(lefts,
             dists = subprocess.check_output(
                 ["bottleneck_dist", t1_name, t2_name, str(relative_error)])
         return np.array([min(cap, float(d)) for d in dists.splitlines()])
+
+
+def wasserstein_distance(left,
+                         right,
+                         degree,
+                         inf=1e10,
+                         cap=10,
+                         # Needed to keep hera from crashing, which it does on
+                         # some inputs with
+                         relative_error=1e-10
+                         # default relative_error. This default value is high
+                         # enough to prevent it.
+                         ):
+    # Hera crashes when one or both barcodes are empty
+    if len(left.bars) == 0 or len(right.bars) == 0:
+        if len(left.bars) == 0 and len(right.bars) == 0:
+            return 0
+        return cap
+    else:
+        with tempfile.TemporaryDirectory() as temp:
+            t1_name = os.path.join(temp, 'self.txt')
+            t2_name = os.path.join(temp, 'other.txt')
+            with open(t1_name, 'wt') as t1:
+                for bar in left.bars:
+                    t1.writelines(["%s %s\n" %
+                                   (bar.start, min(inf, bar.end))
+                                   for _ in range(bar.multiplicity)])
+            with open(t2_name, 'wt') as t2:
+                for bar in right.bars:
+                    t2.writelines(["%s %s\n" %
+                                   (bar.start, min(inf, bar.end))
+                                   for _ in range(bar.multiplicity)])
+            if relative_error is None:
+                dist = subprocess.check_output(
+                    ["wasserstein_dist", t1_name, t2_name, str(degree)])
+            else:
+                dist = subprocess.check_output(
+                    ["wasserstein_dist", t1_name, t2_name, str(degree), str(relative_error)])
+            return min(cap, float(dist))
+
+# note we use a constant instead of inf because of a bug in wasserstein_dist.
+
+
