@@ -233,7 +233,7 @@ def array_wasserstein_distance(lefts,
                                   int(one_bar[2]))
                 t2.write("--\n")
         if relative_error is None:
-            dists = subprocess.check_output(["wasserstein_dist", str(degree), t1_name, t2_name])
+            dists = subprocess.check_output(["wasserstein_dist", t1_name, t2_name, str(degree)])
         else:
             dists = subprocess.check_output(
                 ["wasserstein_dist", t1_name, t2_name, str(degree), str(relative_error)])
