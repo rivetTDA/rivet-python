@@ -89,27 +89,51 @@ class Bifiltration:
         out.write("\n")
 
 
+class MetricSpace:
+    def __init__(self, appearance_label, distance_label, appearance_values, distance_matrix):
+        """distance_matrix must be upper triangular"""
+        self.appearance_label = appearance_label
+        self.distance_label = distance_label
+        self.appearance_values = appearance_values
+        self.distance_matrix = distance_matrix
+
+    def save(self, out):
+        out.write('metric\n')
+        out.write(self.appearance_label + '\n')
+        out.write(" ".join([str(s) for s in self.appearance_values]) + "\n")
+        out.write(self.distance_label + '\n')
+        dim = len(self.distance_matrix)
+        max_dist = max(*[self.distance_matrix[i][j] for i in range(dim) for j in range(dim)])
+        out.write(str(max_dist) + '\n')
+        counter = 0
+        for row in range(dim):
+            for col in range(row + 1, dim):
+                counter += 1
+                out.write("%s " % self.distance_matrix[row][col])
+            out.write('\n')
+
+
 def compute_point_cloud(cloud, homology=0, x=0, y=0, verify=False):
-    with tempfile.TemporaryDirectory() as dir:
-        cloud_file_name = os.path.join(dir, 'points.txt')
-        with open(cloud_file_name, 'w+t') as cloud_file:
-            cloud.save(cloud_file)
-        output_name = compute_file(cloud_file_name,
-                                   homology=homology, x=x, y=y)
-        with open(output_name, 'rb') as output_file:
-            output = output_file.read()
-        if verify:
-            assert bounds(output)
-        return output
+    return _compute_bytes(cloud, homology, x, y, verify)
 
 
 def compute_bifiltration(bifiltration, homology=0, verify=False):
+    return _compute_bytes(bifiltration, homology, 0, 0, verify)
+
+
+def compute_metric_space(metric_space, homology=0, verify=False):
+    return _compute_bytes(metric_space, homology, 0, 0, verify)
+
+
+def _compute_bytes(saveable, homology, x, y, verify):
     with tempfile.TemporaryDirectory() as dir:
-        bifiltration_name = os.path.join(dir, 'points.txt')
-        with open(bifiltration_name, 'w+t') as bifiltration_file:
-            bifiltration.save(bifiltration_file)
-        output_name = compute_file(bifiltration_name,
-                                   homology=homology)
+        saveable_name = os.path.join(dir, 'rivet_input_data.txt')
+        with open(saveable_name, 'w+t') as saveable_file:
+            saveable.save(saveable_file)
+        output_name = compute_file(saveable_name,
+                                   homology=homology,
+                                   x=x,
+                                   y=y)
         with open(output_name, 'rb') as output_file:
             output = output_file.read()
         if verify:
