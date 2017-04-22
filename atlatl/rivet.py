@@ -99,11 +99,11 @@ class MetricSpace:
         self.distance_matrix = distance_matrix
 
     def save(self, out):
+        out.write('metric\n')
         if self.comment:
             out.write('#')
             out.write(self.comment.replace('\n', '\n#'))
             out.write('\n')
-        out.write('metric\n')
         out.write(self.appearance_label + '\n')
         out.write(" ".join([str(s) for s in self.appearance_values]) + "\n")
         out.write(self.distance_label + '\n')
