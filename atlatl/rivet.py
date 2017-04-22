@@ -90,14 +90,19 @@ class Bifiltration:
 
 
 class MetricSpace:
-    def __init__(self, appearance_label, distance_label, appearance_values, distance_matrix):
+    def __init__(self, appearance_label, distance_label, appearance_values, distance_matrix, comment=None):
         """distance_matrix must be upper triangular"""
+        self.comment = comment
         self.appearance_label = appearance_label
         self.distance_label = distance_label
         self.appearance_values = appearance_values
         self.distance_matrix = distance_matrix
 
     def save(self, out):
+        if self.comment:
+            out.write('#')
+            out.write(self.comment.replace('\n', '\n#'))
+            out.write('\n')
         out.write('metric\n')
         out.write(self.appearance_label + '\n')
         out.write(" ".join([str(s) for s in self.appearance_values]) + "\n")
