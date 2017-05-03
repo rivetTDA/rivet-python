@@ -1,11 +1,14 @@
+import math
 import numpy as np
 from atlatl import rivet, barcode, hera
 from atlatl.rivet import Point, PointCloud
 
 
-def find_offset(sl, pt):
+def find_offset(sl, pt, x_min):
     # find the offset parameter for the line of given slope passing through the point
     # slope is in degrees
+    if sl == 90:
+        return -1 * pt[0] + x_min
 
     m = np.tan(np.radians(sl))
     # equation of line is y=mx+(pt[1]-pt[0]m)
@@ -16,14 +19,15 @@ def find_offset(sl, pt):
 
     b = pt[1] - pt[0] * m
 
-    x_minimizer = -2 * (pt[1] * m - pt[0] * m**2) / (1 + m**2)
-    y_minimizer = m * x_minimizer + b
-    unsigned_dist = np.sqrt(x_minimizer**2 + y_minimizer**2)
-
-    if b > 0:
-        return unsigned_dist
-    else:
-        return -unsigned_dist
+    return math.cos(m) * b
+    # x_minimizer = -2 * (pt[1] * m - pt[0] * m**2) / (1 + m**2)
+    # y_minimizer = m * x_minimizer + b
+    # unsigned_dist = np.sqrt(x_minimizer**2 + y_minimizer**2)
+    #
+    # if b > 0:
+    #     return unsigned_dist
+    # else:
+    #     return -unsigned_dist
 
 
 def common_bounds(bounds1: rivet.Bounds, bounds2: rivet.Bounds):
@@ -101,8 +105,8 @@ def generate_lines(grid_size, upper_left, lower_right):
 
         # find the offset parameters such that the lines with slope slope just
         # touches the upper left corner of the box
-        UL_offset = find_offset(slope, upper_left)
-        LR_offset = find_offset(slope, lower_right)
+        UL_offset = find_offset(slope, upper_left, upper_left[0])
+        LR_offset = find_offset(slope, lower_right, upper_left[0])
 
         # Choose the values of offset for this particular choice of slope.
         if grid_size == 1:
