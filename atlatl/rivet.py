@@ -178,8 +178,16 @@ def barcodes_file(name, slice_name):
             shlex.split(cmd)).split(b'\n'))
 
 
-def betti_file(name, x=0, y=0):
-    cmd = "%s %s --betti -x %d -y %d" % (rivet_executable, name, x, y)
+def betti(saveable, homology=0, x=0, y=0):
+    with tempfile.TemporaryDirectory() as dir:
+        name = os.path.join(dir, 'rivet-input.txt')
+        with open(name, 'wt') as betti_temp:
+            saveable.save(betti_temp)
+        return betti_file(name, homology=homology, x=x, y=y)
+
+
+def betti_file(name, homology=0, x=0, y=0):
+    cmd = "%s %s --betti -H %d -x %d -y %d" % (rivet_executable, name, homology, x, y)
     return _parse_betti(subprocess.check_output(shlex.split(cmd)).split(b'\n'))
 
 
@@ -236,10 +244,10 @@ class Dimensions:
 
 
 class MultiBetti:
-    def __init__(self, dims, xi_0, xi_1, xi_2):
+    def __init__(self, dims: Dimensions, xi_0, xi_1, xi_2):
         self.dimensions = dims
-        self.xi_0 = xi_0,
-        self.xi_1 = xi_1,
+        self.xi_0 = xi_0
+        self.xi_1 = xi_1
         self.xi_2 = xi_2
 
     def __repr__(self):
