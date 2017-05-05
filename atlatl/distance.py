@@ -105,10 +105,10 @@ class SplitMat:
         if col is Dimension.LOW:
             # print("LOW")
             # print("Before:")
-            print(self.mat)
+            # print(self.mat)
             mat = np.insert(self.mat, 0, [0], axis=1)
             # print("After:")
-            print(mat)
+            # print(mat)
         elif col is Dimension.HIGH:
             # print("HIGH")
             mat = np.append(self.mat, np.zeros((self.mat.shape[0], 1)), axis=1)
@@ -155,7 +155,7 @@ class SplitMat:
     def weighted_difference(self, other):
         diff = self - other
         dim_lengths = [d.lengths for d in diff.dimensions]
-        print(dim_lengths)
+        # print(dim_lengths)
         for row, r_weight in enumerate(dim_lengths[0]):
             for col, c_weight in enumerate(dim_lengths[1]):
                 diff.mat[row, col] = diff.mat[row, col] * r_weight * c_weight
@@ -234,13 +234,13 @@ def betti_to_splitmat(betti: rivet.MultiBetti):
     ys = betti.dimensions.y_grades
     dims = Dimension(ys[0], ys[1:]), Dimension(xs[0], xs[1:])
     mat = np.zeros((len(ys) - 1, len(xs) - 1))
-    print('x0')
+    # print('x0')
     for row, col, multiplicity in betti.xi_0:
-        print(row, col, multiplicity)
+        # print(row, col, multiplicity)
         mat[col:, row:] += multiplicity
-    print('x1')
+    # print('x1')
     for row, col, multiplicity in betti.xi_1:
-        print(row, col, multiplicity)
+        # print(row, col, multiplicity)
         mat[col:, row:] -= multiplicity
     mat[mat < 0] = 0
     return SplitMat(mat, dims)
