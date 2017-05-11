@@ -7,7 +7,7 @@ class Dimension:
     HIGH = object()
 
     def __init__(self, lower_bound, upper_bounds):
-        assert len(upper_bounds) > 1
+        assert len(upper_bounds) >= 1
         assert lower_bound <= upper_bounds[0]
         assert sorted(list(upper_bounds)) == list(upper_bounds)
         self.lower_bound = lower_bound
@@ -64,8 +64,10 @@ class Dimension:
 
 
 class SplitMat:
-    def __init__(self, mat, dimensions):
+    def __init__(self, mat, dimensions=None):
         self.mat = mat
+        if not dimensions:
+            dimensions = [Dimension(0, list(range(1, s + 1))) for s in self.mat.shape]
         self.dimensions = dimensions
         assert len(mat.shape) == len(dimensions)
         for i in range(len(mat.shape)):
@@ -207,6 +209,13 @@ def test_splitmat():
                                  [0, 0, 0, -1],
                                  [0, 0, -1, 0]], diff
     assert m1.distance(m2) == .5, m1.distance(m2)
+
+    for i in range(1, 11):
+        for j in range(1, 11):
+            m = SplitMat(np.random.random_integers(0, 10, i * j).reshape((i, j)))
+            assert m.distance(m) == 0
+    print("Tests passed")
+
 # class Rect:
 #     def __init__(self, start, weight, end=None):
 #         self.start = start
