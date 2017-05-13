@@ -22,13 +22,20 @@ class Point:
         return len(self.coords)
 
 
+def points(tuples, appearance=0):
+    return [Point(appearance, *tup) for tup in tuples]
+
+
 class PointCloud:
-    def __init__(self, points, second_param_name,
+    def __init__(self, points, second_param_name=None,
                  comments=None, max_dist=None):
+        if second_param_name:
+            self.second_param_name = second_param_name
+        else:
+            self.second_param_name = None
         self.points = points
         self.comments = comments
         self.dimension = points[0].dimension
-        self.second_param_name = second_param_name
         for i, p in enumerate(points):
             if p.dimension != self.dimension:
                 raise ValueError("Expected points of dimension %d,"
@@ -54,12 +61,16 @@ class PointCloud:
         out.write("points\n")
         out.write(str(self.dimension) + "\n")
         out.write(str(self.max_dist) + "\n")
-        out.write(self.second_param_name + "\n")
+        if self.second_param_name is not None:
+            out.write(self.second_param_name + "\n")
+        else:
+            out.write("no function\n")
         for p in self.points:
             for c in p.coords:
                 out.write(str(c))
                 out.write(" ")
-            out.write(str(p.appearance))
+            if self.second_param_name is not None:
+                out.write(str(p.appearance))
             out.write("\n")
         out.write("\n")
 
