@@ -173,17 +173,17 @@ def _rivet_name(base, homology, x, y):
     return output_name
 
 
-def compute_file(name, output_name=None, homology=0, x=0, y=0):
+def compute_file(input_name, output_name=None, homology=0, x=0, y=0):
     if not output_name:
-        output_name = _rivet_name(name, homology, x, y)
+        output_name = _rivet_name(input_name, homology, x, y)
     cmd = "%s %s %s -H %d -x %d -y %d" % \
-          (rivet_executable, name, output_name, homology, x, y)
+          (rivet_executable, input_name, output_name, homology, x, y)
     subprocess.check_output(shlex.split(cmd))
     return output_name
 
 
-def barcodes_file(name, slice_name):
-    cmd = "%s %s --barcodes %s" % (rivet_executable, name, slice_name)
+def barcodes_file(input_name, slice_name):
+    cmd = "%s %s --barcodes %s" % (rivet_executable, input_name, slice_name)
     return _parse_slices(
         subprocess.check_output(
             shlex.split(cmd)).split(b'\n'))

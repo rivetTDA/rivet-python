@@ -1,10 +1,16 @@
 from . import rivet
 import numpy as np
 import math
+from enum import Enum
+
+
+class DimensionQueryResult(Enum):
+    LOW = 1
+    HIGH = 2
+    IN = 3
+
 
 class Dimension:
-    LOW = object()
-    HIGH = object()
 
     def __init__(self, lower_bound, upper_bounds):
         assert len(upper_bounds) >= 1
@@ -42,14 +48,14 @@ class Dimension:
     def is_bound(self, bound):
         return bound == self.lower_bound or bound in self.upper_bounds
 
-    def index(self, value):
+    def index(self, value) -> (DimensionQueryResult, int):
         if value < self.lower_bound:
-            return self.LOW
+            return DimensionQueryResult.LOW, -1
         elif value > self.upper_bounds[-1]:
-            return self.HIGH
+            return DimensionQueryResult.HIGH, -1
         for i, bound in enumerate(self.upper_bounds):
             if value <= bound:
-                return i
+                return DimensionQueryResult.IN, i
 
     def merge(self, other):
         uppers = set(other.upper_bounds).union(self.upper_bounds)
@@ -80,15 +86,15 @@ class SplitMat:
         return self.dimensions[1].index(length)
 
     def index(self, *coords):
-        return tuple([d.index(c) for d, c in zip(self.dimensions, coords)])
+        return zip(*tuple([d.index(c) for d, c in zip(self.dimensions, coords)]))
 
     def add_row(self, first_length):
-        row = self.row(first_length)
+        flag, row = self.row(first_length)
         # print("Adding row for", first_length)
-        if row is Dimension.LOW:
+        if flag == DimensionQueryResult.LOW:
             # print("LOW")
             mat = np.insert(self.mat, 0, [0], axis=0)
-        elif row is Dimension.HIGH:
+        elif flag == DimensionQueryResult.HIGH:
             # print("HIGH")
             mat = np.append(self.mat, np.zeros((1, self.mat.shape[1])), axis=0)
         elif not self.dimensions[0].is_bound(first_length):
@@ -102,16 +108,16 @@ class SplitMat:
         return SplitMat(mat, dims)
 
     def add_col(self, first_length):
-        col = self.col(first_length)
+        flag, col = self.col(first_length)
         # print("Adding col for", first_length)
-        if col is Dimension.LOW:
+        if flag == DimensionQueryResult.LOW:
             # print("LOW")
             # print("Before:")
             # print(self.mat)
             mat = np.insert(self.mat, 0, [0], axis=1)
             # print("After:")
             # print(mat)
-        elif col is Dimension.HIGH:
+        elif col == DimensionQueryResult.HIGH:
             # print("HIGH")
             mat = np.append(self.mat, np.zeros((self.mat.shape[0], 1)), axis=1)
         elif not self.dimensions[1].is_bound(first_length):
@@ -175,46 +181,7 @@ dimensions: %s
 data:
 %s""" % (self.dimensions, self.mat)
 
-def test_splitmat():
-    s1 = SplitMat(np.arange(16).reshape((4, 4)), [Dimension(0, list(range(1, 5))),
-                                                  Dimension(0, list(range(1, 5)))])
-    s2 = SplitMat(np.arange(9).reshape((3, 3)), [Dimension(0, list(range(1,4))),
-                                                 Dimension(0, list(range(1,4)))])
-    s2 = s2.translate((.5, .5))
-    res = s1 + s2
-    print(res)
-    ul_merged = res.index(.6, .6)
-    lr_merged = res.index(3.4, 3.4)
-    assert ul_merged == (1, 1), ul_merged
-    assert lr_merged == (6, 6), lr_merged
-    assert res.mat[ul_merged] == 0
-    assert res.mat[lr_merged] == 23
 
-    dim = Dimension(-2, [-1, 2, 2.5, 3, 5])
-    assert dim.lengths == [1, 3, .5, .5, 2], dim.lengths
-    print("Difference:")
-    print(s1 - s2)
-    print("Weighted difference:")
-    print(s1.weighted_difference(s2))
-    print("Distance:", s1.distance(s2))
-
-    m1 = SplitMat(np.eye(4), [Dimension(0, [.5, 1, 1.5, 2]),
-                                     Dimension(0, [.5, 1, 1.5, 2])])
-
-    m2 = SplitMat(np.eye(2), [Dimension(0, [1, 2]),
-                                     Dimension(0, [1, 2])])
-    diff = m1 - m2
-    assert diff.mat.tolist() == [[0, -1, 0, 0],
-                                 [-1, 0, 0, 0],
-                                 [0, 0, 0, -1],
-                                 [0, 0, -1, 0]], diff
-    assert m1.distance(m2) == .5, m1.distance(m2)
-
-    for i in range(1, 11):
-        for j in range(1, 11):
-            m = SplitMat(np.random.random_integers(0, 10, i * j).reshape((i, j)))
-            assert m.distance(m) == 0
-    print("Tests passed")
 
 # class Rect:
 #     def __init__(self, start, weight, end=None):
