@@ -6,6 +6,7 @@ import logging
 import numpy as np
 import socket
 # note we use a constant instead of inf because of a bug in bottleneck_dist.
+import time
 
 
 def bottleneck_distance(left,
@@ -84,7 +85,7 @@ def multi_bottleneck_distance(lefts,
                 dists = subprocess.check_output(
                     ["bottleneck_dist", t1_name, t2_name, str(relative_error)])
         except Exception as e:
-            error_dir = "error-hera-%s-%d" % (socket.gethostname(), os.getpid())
+            error_dir = "error-hera-%s-%d-%s" % (socket.gethostname(), os.getpid(), time.time())
             os.mkdir(error_dir)
             with open(os.path.join(error_dir, 'self.txt'), 'wt') as f:
                 f.write(open(t1_name, 'rt').read())

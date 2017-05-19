@@ -19,15 +19,15 @@ def find_offset(sl, pt, x_min):
 
     b = pt[1] - pt[0] * m
 
-    return math.cos(m) * b
-    # x_minimizer = -2 * (pt[1] * m - pt[0] * m**2) / (1 + m**2)
-    # y_minimizer = m * x_minimizer + b
-    # unsigned_dist = np.sqrt(x_minimizer**2 + y_minimizer**2)
-    #
-    # if b > 0:
-    #     return unsigned_dist
-    # else:
-    #     return -unsigned_dist
+    # return math.cos(m) * b
+    x_minimizer = -2 * (pt[1] * m - pt[0] * m**2) / (1 + m**2)
+    y_minimizer = m * x_minimizer + b
+    unsigned_dist = np.sqrt(x_minimizer**2 + y_minimizer**2)
+
+    if b > 0:
+        return unsigned_dist
+    else:
+        return -unsigned_dist
 
 
 def common_bounds(bounds1: rivet.Bounds, bounds2: rivet.Bounds):
