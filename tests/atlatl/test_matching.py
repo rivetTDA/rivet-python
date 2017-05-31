@@ -111,7 +111,7 @@ def test_find_offset():
     val = matching_distance.find_offset(0, (3, 3))
     assert math.isclose(val, 3, abs_tol=1e-8)
     val = matching_distance.find_offset(90, (3, 3))
-    assert math.isclose(val, 3, abs_tol=1e-8)
+    assert math.isclose(val, -3, abs_tol=1e-8)
 
     # val = matching_distance.find_offset(math.degrees(math.atan(2)), (1, 3), 0)
     # assert math.isclose(val, 1, abs_tol=1e-8)
