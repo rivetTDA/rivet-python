@@ -4,11 +4,11 @@ from atlatl import rivet, barcode, hera
 from atlatl.rivet import Point, PointCloud
 
 
-def find_offset(sl, pt, x_min):
+def find_offset(sl, pt):
     # find the offset parameter for the line of given slope passing through the point
     # slope is in degrees
     if sl == 90:
-        return -1 * pt[0] + x_min
+        return pt[0]
 
     m = np.tan(np.radians(sl))
     # equation of line is y=mx+(pt[1]-pt[0]m)
@@ -105,8 +105,8 @@ def generate_lines(grid_size, upper_left, lower_right):
 
         # find the offset parameters such that the lines with slope slope just
         # touches the upper left corner of the box
-        UL_offset = find_offset(slope, upper_left, upper_left[0])
-        LR_offset = find_offset(slope, lower_right, upper_left[0])
+        UL_offset = find_offset(slope, upper_left)
+        LR_offset = find_offset(slope, lower_right)
 
         # Choose the values of offset for this particular choice of slope.
         if grid_size == 1:
