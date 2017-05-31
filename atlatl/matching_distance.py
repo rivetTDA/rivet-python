@@ -8,7 +8,7 @@ def find_offset(sl, pt):
     # find the offset parameter for the line of given slope passing through the point
     # slope is in degrees
     if sl == 90:
-        return pt[0]
+        return -pt[0]
 
     m = np.tan(np.radians(sl))
     # equation of line is y=mx+(pt[1]-pt[0]m)
@@ -19,7 +19,6 @@ def find_offset(sl, pt):
 
     b = pt[1] - pt[0] * m
 
-    # return math.cos(m) * b
     x_minimizer = -2 * (pt[1] * m - pt[0] * m**2) / (1 + m**2)
     y_minimizer = m * x_minimizer + b
     unsigned_dist = np.sqrt(x_minimizer**2 + y_minimizer**2)
