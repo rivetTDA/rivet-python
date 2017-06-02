@@ -92,3 +92,71 @@ def rank(module,a,b):
             count=count+barcode[i][2]
     return count
 
+def rank_norm(module,grid_size,fixed_bounds=None,use_weights=True,normalize=False,minimum_rank=0):
+    """approximately computes the approximate (weighted) L_1-norm of the rank_invariant on a rectangle
+    
+    TODO: Adapt this to a version that also computes the L_1 norm of the difference between rank functions 
+    from two different modules. 
+    
+    Input:
+        module: RIVET "precomputed" representations of a persistence
+        modules, in Bryn's python bytes format
+
+        grid_size: This is a non-negative integer which should be at least 2.
+            We will compute the norm approximately using a grid_size x grid_size grid.
+
+        fixed_bound: A rivet.bounds object.  Specifies the rectangle over which we compute
+        If none, the bounds are taken to be the bounds for the module provided by RIVET.
+
+        use_weights: Boolean; Should we compute the norm in a weighted fashion, so that ranks M(a,b) 
+        with a and b lying (close to) a horizontal or vertical line are weighted less?  
+        Weights used are the same ones as for computing the matching distance.
+
+        normalize: Boolean; is used only if use_weights=True.  In this case, the weights are chosen as if 
+        the bounding rectangle were a rescaled to be a square.
+        
+        minimum_rank: Treat all ranks below this value as 0.  [Motivation: For hypothethsis testing where the 
+        hypothesis is of the form: This data has at least k topological features.]
+    """
+    
+    if fixed_bounds is None:
+        # otherwise, determine bounds from the bounds of the two modules
+        fixed_bounds = rivet.bounds(module)
+        
+    LL = fixed_bounds.lower
+    UR = fixed_bounds.upper
+
+    x_increment=(UR[0]-LL[0])/(grid_size-1)
+    y_increment=(UR[1]-LL[1])/(grid_size-1)
+    volume_element=pow(x_increment*y_increment,2)
+  
+    if volume_element==0:
+        print('Rectangle is degenerate!  Behavior of the function in this case is not defined.' )
+        return -1
+    
+    norm_so_far=0
+    
+    for x_low in range(grid_size):
+        for y_low in range(grid_size):
+            for x_high in range(x_low,grid_size):
+                for y_high in range(y_low,grid_size):   
+                          
+                    a=[LL[0]+x_low*x_increment,LL[1]+y_low*y_increment]
+                    b=[LL[0]+x_high*x_increment,LL[1]+y_high*y_increment]                   
+                    
+                    #TODO: In weighted case, weight should depend on a,b, and normalize.
+                    if use_weights:
+                        print('weighted norm not yet implemented')
+                        return -1
+                    
+                    weight=1
+                    current_rank=rank(module,a,b)
+                    if current_rank<minimum_rank:
+                        current_rank=0
+                    
+                    norm_so_far=norm_so_far+weight*volume_element*current_rank
+        
+    return norm_so_far
+        
+        
+        
