@@ -92,15 +92,13 @@ def rank(module,a,b):
             count=count+barcode[i][2]
     return count
 
-def rank_norm(module,grid_size,fixed_bounds=None,use_weights=True,normalize=False,minimum_rank=0):
-    """approximately computes the approximate (weighted) L_1-norm of the rank_invariant on a rectangle
-    
-    TODO: Adapt this to a version that also computes the L_1 norm of the difference between rank functions 
-    from two different modules. 
+def rank_norm(module1,module2=None,grid_size=20,fixed_bounds=None,use_weights=True,normalize=False,minimum_rank=0):
+    """If module2==None, approximately computes the approximate (weighted) L_1-norm of the rank invariant of module1 on a rectangle.  If module2!=None, computes this for the the difference of the
+        rank invariants of module1 and module2.
     
     Input:
-        module: RIVET "precomputed" representations of a persistence
-        modules, in Bryn's python bytes format
+        module1,module2: RIVET "precomputed" representations of a persistence
+        module, in Bryn's python bytes format
 
         grid_size: This is a non-negative integer which should be at least 2.
             We will compute the norm approximately using a grid_size x grid_size grid.
@@ -120,11 +118,16 @@ def rank_norm(module,grid_size,fixed_bounds=None,use_weights=True,normalize=Fals
     """
     
     if fixed_bounds is None:
-        # otherwise, determine bounds from the bounds of the two modules
-        fixed_bounds = rivet.bounds(module)
-        
-    LL = fixed_bounds.lower
-    UR = fixed_bounds.upper
+        # determine bounds from the bounds of the given module(s)
+        if module2==None:
+            bounds = rivet.bounds(module1)
+        else:
+            bounds = mtching_distance.common_bounds(rivet.bounds(module1),rivet.bounds(module2))
+    else:
+        bounds=fixed_bounds
+
+    LL = bounds.lower
+    UR = bounds.upper
 
     x_increment=(UR[0]-LL[0])/(grid_size-1)
     y_increment=(UR[1]-LL[1])/(grid_size-1)
@@ -150,13 +153,25 @@ def rank_norm(module,grid_size,fixed_bounds=None,use_weights=True,normalize=Fals
                         return -1
                     
                     weight=1
-                    current_rank=rank(module,a,b)
-                    if current_rank<minimum_rank:
-                        current_rank=0
+                    current_rank1=rank(module1,a,b)
+                    if current_rank1<minimum_rank:
+                        current_rank1=0
+                
+                
+                
+                    if module2==None:
+                        current_rank2=0
+                    else:
+                        current_rank2=rank(module2,a,b)
+                        if current_rank2<minimum_rank:
+                            current_rank2=0
                     
-                    norm_so_far=norm_so_far+weight*volume_element*current_rank
+                    norm_so_far=norm_so_far+weight*volume_element*abs(current_rank1-current_rank2)
         
     return norm_so_far
-        
-        
-        
+
+
+
+
+
+
