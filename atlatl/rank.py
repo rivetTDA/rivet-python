@@ -93,9 +93,9 @@ def rank(module,a,b):
     return count
 
 def rank_norm(module1,module2=None,grid_size=20,fixed_bounds=None,use_weights=True,normalize=False,minimum_rank=0):
-    """If module2==None, approximately computes the approximate (weighted) L_1-norm of the rank invariant of module1 on a rectangle.  If module2!=None, computes this for the the difference of the
+    """If module2==None, approximately computes the approximate (weighted or unweighted) L_1-norm of the rank invariant of module1 on a rectangle.  If module2!=None, computes this for the the difference of the
         rank invariants of module1 and module2.
-    
+
     Input:
         module1,module2: RIVET "precomputed" representations of a persistence
         module, in Bryn's python bytes format
@@ -110,8 +110,8 @@ def rank_norm(module1,module2=None,grid_size=20,fixed_bounds=None,use_weights=Tr
         with a and b lying (close to) a horizontal or vertical line are weighted less?  
         Weights used are the same ones as for computing the matching distance.
 
-        normalize: Boolean; is used only if use_weights=True.  In this case, the weights are chosen as if 
-        the bounding rectangle were a rescaled to be a square.
+        normalize: Boolean.  If true, the weights and volume elements are chosen as if
+        the bounding rectangle were a rescaled to be a unit square.
         
         minimum_rank: Treat all ranks below this value as 0.  [Motivation: For hypothethsis testing where the 
         hypothesis is of the form: This data has at least k topological features.]
@@ -122,7 +122,7 @@ def rank_norm(module1,module2=None,grid_size=20,fixed_bounds=None,use_weights=Tr
         if module2==None:
             bounds = rivet.bounds(module1)
         else:
-            bounds = mtching_distance.common_bounds(rivet.bounds(module1),rivet.bounds(module2))
+            bounds = matching_distance.common_bounds(rivet.bounds(module1),rivet.bounds(module2))
     else:
         bounds=fixed_bounds
 
@@ -131,12 +131,19 @@ def rank_norm(module1,module2=None,grid_size=20,fixed_bounds=None,use_weights=Tr
 
     x_increment=(UR[0]-LL[0])/(grid_size-1)
     y_increment=(UR[1]-LL[1])/(grid_size-1)
-    volume_element=pow(x_increment*y_increment,2)
-  
-    if volume_element==0:
+
+    if x_increment==0 or y_increment==0:
         print('Rectangle is degenerate!  Behavior of the function in this case is not defined.' )
         return -1
-    
+
+    if normalize:
+        delta_x = UR[0] - LL[0]
+        delta_y = UR[1] - LL[1]
+        volume_element=pow(1/(grid_size-1),4)
+    else:
+        #we don't need to define delta_x and delta_y if we aren't normalizing
+        volume_element=pow(x_increment*y_increment,2)
+
     norm_so_far=0
     
     for x_low in range(grid_size):
@@ -149,15 +156,22 @@ def rank_norm(module1,module2=None,grid_size=20,fixed_bounds=None,use_weights=Tr
                     
                     #TODO: In weighted case, weight should depend on a,b, and normalize.
                     if use_weights:
-                        print('weighted norm not yet implemented')
-                        return -1
-                    
-                    weight=1
+                        # if a and b lie on the same vertical or horizontal line, weight is 0.
+                        if a[0]==b[0] or a[1]==b[1]:
+                            weight=0
+                        else:
+                            slope=(b[1]-a[1])/(b[0]-a[0])
+                            if normalize:
+                                weight=matching_distance.calculate_weight(slope,True,delta_x,delta_y)
+                            else:
+                                weight=matching_distance.calculate_weight(slope)
+                    # else we dont use weights
+                    else:
+                        weight=1
+
                     current_rank1=rank(module1,a,b)
                     if current_rank1<minimum_rank:
                         current_rank1=0
-                
-                
                 
                     if module2==None:
                         current_rank2=0

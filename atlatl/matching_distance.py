@@ -120,48 +120,64 @@ def generate_lines(grid_size, upper_left, lower_right):
     return lines
 
 
+def calculate_weight(slope,normalize=False,delta_x=None,delta_y=None):
+    # When computing the matching distance, each line slope considered is assigned a weight.
+    # This function computes that weight.  It will also be used elsewhere to compute a 
+    # "weighted norm" of a rank function.
+   
+    # first, let's recall how the re-weighting works in the un-normalized case.
+    # According to the definition of the matching distance, we choose
+    # the weight so that if the interleaving distance between Mod1 and Mod2
+    # is 1, then the weighted bottleneck distance between the slices is at most 1.
+
+    m = np.tan(np.radians(slope))
+
+    if not normalize:
+        q = max(m, 1 / m)
+        w = 1 / np.sqrt(1 + q**2)
+
+    else:
+        # next, let's consider the normalized case. If the un-normalized slope
+        # is 'slope', then the normalized slope is given as follows
+        if delta_y == 0:
+            print(
+                'corner case where delta_y=0 not addressed.  expect a divide-by-0 problem')
+        mn = m * delta_x / delta_y
+
+        # so the associated weight in the normalized case is given by
+        q = max(mn, 1 / mn)
+        w = 1 / np.sqrt(1 + q**2)
+
+        # of course, this code can be made more compact, but hopefully this
+        # way is readable
+    
+    return w
+
+#TODO: Now that I've separated out the code to compute the weight, 
+#perhaps this function could be absorbed back into the main function.
+#Not too limportant though.  -ML 6/5/17.
+
 def calculate_match(line_distances, normalize, delta_x, delta_y):
     # now compute matching distance
     m_dist = 0
 
     for (slope, _), raw_distance in line_distances:
-        # To determine the weight to use for the line given by (slope,offset),
+        # To determine the weight of a line with the given slope,
         # we need to take into account both the weight coming from slope of
         # the line, and also the normalization, which changes both the effective
-        # weight and the effective bottleneck distance.
+        # weight and the effective bottleneck distance.    
 
-        # first, let's recall how the re-weighting works in the un-normalized case.
-        # According to the definition of the matching distance, we choose
-        # the weight so that if the interleaving distance between Mod1 and Mod2
-        # is 1, then the weighted bottleneck distance between the slices is at most 1.
-
-        m = np.tan(np.radians(slope))
-
-        if not normalize:
-            q = max(m, 1 / m)
-            w = 1 / np.sqrt(1 + q**2)
-            m_dist = max(m_dist, w * raw_distance)
-
-        else:
-            # next, let's consider the normalized case. If the un-normalized slope
-            # is `slope`, then the normalized slope is given as follows
-            if delta_y == 0:
-                print(
-                    'corner case where delta_y=0 not addressed.  expect a divide-by-0 problem')
-            mn = m * delta_x / delta_y
-
-            # so the associated weight in the normalized case is given by
-            q = max(mn, 1 / mn)
-            w = 1 / np.sqrt(1 + q**2)
-
-            # of course, this code can be made more compact, but hopefully this
-            # way is readable
-
-            # moreover, normalization changes the length of a line segment along the line (slope,offset),
-            # and hence also the bottleneck distance, by a factor of
+        w=calculate_weight(slope,normalize,delta_x,delta_y)
+            
+        # moreover, normalization changes the length of a line segment along the line (slope,offset),
+        # and hence also the bottleneck distance, by a factor of
+        
+        if normalize:
             bottleneck_stretch = np.sqrt(
                 ((m / delta_y)**2 + (1 / delta_x)**2) / (m**2 + 1))
-            m_dist = max(m_dist, w * raw_distance * bottleneck_stretch)
+        else:
+            bottleneck_stretch = 1
+        m_dist = max(m_dist, w * raw_distance * bottleneck_stretch)
 
     return m_dist
 
