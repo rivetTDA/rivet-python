@@ -173,6 +173,7 @@ def calculate_match(line_distances, normalize, delta_x, delta_y):
         # and hence also the bottleneck distance, by a factor of
         
         if normalize:
+            m = np.tan(np.radians(slope))    
             bottleneck_stretch = np.sqrt(
                 ((m / delta_y)**2 + (1 / delta_x)**2) / (m**2 + 1))
         else:

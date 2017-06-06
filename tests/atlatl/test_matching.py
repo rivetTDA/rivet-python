@@ -60,6 +60,40 @@ prism_2b = rivet.Bifiltration("x_label", "y_label", [
     rivet.Point((3, 3), 2, 4, 3)
 ])
 
+#the next two exampels take the last two examples, and simply double the y-coordinates
+prism_1b_stretch = rivet.Bifiltration("x_label", "y_label", [
+    rivet.Point((1, 0), 0, 1),
+    rivet.Point((1, 0), 0, 2),
+    rivet.Point((1, 0), 1, 2),
+                                                     
+    rivet.Point((0, 2), 3, 4),
+    rivet.Point((0, 2), 4, 5),
+    rivet.Point((0, 2), 3, 5),
+                                                     
+    rivet.Point((1, 2), 1, 2, 4),
+    rivet.Point((1, 2), 2, 4, 5),
+    rivet.Point((1, 2), 0, 1, 3),
+    rivet.Point((1, 2), 1, 3, 4),
+    rivet.Point((1, 2), 0, 2, 5),
+    rivet.Point((1, 2), 0, 3, 5),
+                                                     
+    rivet.Point((4, 0), 0, 1, 2),
+    rivet.Point((0, 8), 3, 4, 5)
+])
+
+prism_2b_stretch = rivet.Bifiltration("x_label", "y_label", [
+    rivet.Point((0, 0), 1, 2, 4),
+    rivet.Point((0, 0), 2, 4, 5),
+    rivet.Point((0, 0), 0, 1, 3),
+    rivet.Point((0, 0), 1, 3, 4),
+    rivet.Point((0, 0), 0, 2, 3),
+    rivet.Point((0, 0), 2, 5, 3),
+    rivet.Point((4, 0), 0, 1, 2),
+    rivet.Point((0, 8), 3, 4, 5),
+    rivet.Point((3, 6), 2, 4, 3)
+])
+
+
 
 def offset_tup(tup, x, y):
     ox, oy = tup
@@ -96,7 +130,6 @@ def test_overlaps_offset_grid_5b():
     print("50", dist)
     assert math.isclose(dist, 1, abs_tol=1e-1)
 
-
 def test_overlaps_grid_50b():
     mod1 = rivet.compute_bifiltration(prism_1b, homology=1)
     mod2 = rivet.compute_bifiltration(prism_2b, homology=1)
@@ -104,6 +137,13 @@ def test_overlaps_grid_50b():
     print("50", dist)
     assert math.isclose(dist, 1, abs_tol=1e-1)
 
+def test_overlaps_grid_200b_stretch():
+    mod1 = rivet.compute_bifiltration(prism_1b_stretch, homology=1)
+    mod2 = rivet.compute_bifiltration(prism_2b_stretch, homology=1)
+    dist = matching_distance.matching_distance(mod1, mod2, 200, True)
+    print("200", dist)
+    #we should get the same answer as the answer for test_overlaps_grid_50b, divided by 4.
+    assert math.isclose(dist, .25, abs_tol=1e-2)
 
 def test_find_offset():
     val = matching_distance.find_offset(45, (3, 3))
