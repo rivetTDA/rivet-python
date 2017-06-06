@@ -108,15 +108,12 @@ def rank_norm(module1, module2=None, grid_size=20, fixed_bounds=None,
                 hypothethsis testing where the hypothesis is of the form: This
                 data has at least k topological features.] """
 
-    if use_weights:
-        raise ValueError("Weights are not supported yet")
-
     if fixed_bounds is None:
         # determine bounds from the bounds of the given module(s)
         if module2==None:
             bounds = rivet.bounds(module1)
         else:
-            bounds = mtching_distance.common_bounds(
+            bounds = matching_distance.common_bounds(
                     rivet.bounds(module1),rivet.bounds(module2))
     else:
         bounds=fixed_bounds
@@ -138,10 +135,6 @@ def rank_norm(module1, module2=None, grid_size=20, fixed_bounds=None,
         #we don't need to define delta_x and delta_y if we aren't normalizing
         volume_element=pow(x_increment*y_increment,2)
 
-    if volume_element==0:
-        raise ValueError('Rectangle is degenerate!' + \
-                ' Behavior of the function in this case is not defined.' )
-    
     slope_offsets = []
     birth_deaths = []
     weights = []
