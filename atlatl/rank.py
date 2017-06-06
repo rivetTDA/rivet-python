@@ -3,14 +3,18 @@ import numpy as np
 from atlatl import rivet, barcode, hera, matching_distance
 from atlatl.rivet import Point, PointCloud
 
+
 def find_parameter_of_point_on_line(sl,offset,point):
-    #finds the RIVET parameter representation of point on the line (sl,offset).
-    #recall that RIVET parameterizes by line length, and takes the point where the line intersets the positive x-axis or y-axis 
-    #to be parameterized by 0.  If the line is itself the x-axis or y-axis, then the origin is parameterized by 0.  
+    """Finds the RIVET parameter representation of point on the line
+    (sl,offset).  recall that RIVET parameterizes by line length, and takes the
+    point where the line intersets the positive x-axis or y-axis to be
+    parameterized by 0.  If the line is itself the x-axis or y-axis, then the
+    origin is parameterized by 0.  
     
-    #WARNING: Code assumes that the point lies on the line, and does not check this.  
-    #Relatedy, the function could be written using only slope or or offset as input, not both.
-   
+    WARNING: Code assumes that the point lies on the line, and does not check
+    this.  Relatedy, the function could be written using only slope or or
+    offset as input, not both.  """
+
     if sl==90:
        return point[1]
     
@@ -23,7 +27,8 @@ def find_parameter_of_point_on_line(sl,offset,point):
        return 0
     
     #Find the point on the line parameterized by 0.
-    #If offset is positive, this is a point on the y-axis, otherwise, it is a point on the x-axis.
+    #If offset is positive, this is a point on the y-axis, otherwise, it is
+    #a point on the x-axis.
     
     m=math.tan(math.radians(sl))
     if offset>0:
@@ -41,32 +46,10 @@ def find_parameter_of_point_on_line(sl,offset,point):
         else:
             return -dist    
 
-def rank(module,a,b):
-    """Uses the RIVET precomputed file format for a persistence module M to quickly compute the rank of the internal 
-    linear map M(a,b).  
-    
-    This code could be made more efficient by modifying the code in the guts of RIVET, but this should be adequate 
-    our present purposes.  
-    
-    Note that the rank function is unstable with respect to choice of a,b.  Because of numerical error, this function
-    can instead return the value of the rank functon at points a',b' very close to a and b, which can be 
-    different.  In a more careful implementation (done by tweaking the innards of RIVET) this could be avoided, 
-    but shouldn't be a serious issue in our intended applications.  
-    
-    Input:
-        module: RIVET "precomputed" representations of a persistence
-        module, in Bryn's python bytes format
 
-        a,b: each lists representing a point in R^2, with a1<=b1 and a2<=b2
-    """
-
-    #Check that the input is appropriate; if not, print a message and return -1.
-    if a[0]>b[0] or a[1]>b[1]:
-        print("Input to rank function not valid.  Returning -1.")
-        return -1
-      
-    #First, determine the line containing a and b, in RIVET's (slope,offset) format.  
-    #If a==b, we will just choose the vertical line.    
+def slope_offset(a, b):
+    """Determine the line containing a and b, in RIVET's (slope,offset) format.
+    If a==b, we will just choose the vertical line."""
     
     #1.Find the slope (in degrees)
     if a[0]==b[0]:
@@ -76,53 +59,65 @@ def rank(module,a,b):
     
     #2.Find the offset 
     offset=matching_distance.find_offset(sl,a)
+    return (sl, offset)
+
+
+def barcode_rank(barcode, birth, death):
+    """Return the number of bars that are born by 
+    `birth` and die after `death`."""
+    return sum([bar.multiplicity for bar in barcode.bars 
+                if bar.start <= birth and bar.end > death])
         
-    #Next, find the coordinates of a and b on this line, with respect to RIVET's chosen parameterization of the line
-    a_param=find_parameter_of_point_on_line(sl,offset,a)
-    b_param=find_parameter_of_point_on_line(sl,offset,b)
+def rank_norm(module1, module2=None, grid_size=20, fixed_bounds=None,
+        use_weights=False, normalize=False, minimum_rank=0):
+    """If module2==None, approximately computes the approximate (weighted or unweighted)
+    L_1-norm of the rank invariant of module1 on a rectangle.  
     
-    #get the barcode of the slice passing through points a and b
-    line_and_barcode=rivet.barcodes(module,[(sl,offset)])[0]
-    barcode=line_and_barcode[1].to_array()
+    If module2!=None, computes this for the the difference of the rank
+    invariants of module1 and module2.
     
-    #now return the number of bars that are born by a and die after b.  
-    count=0
-    for i in range(len(barcode)):
-        if barcode[i][0]<=a_param and barcode[i][1]>b_param:
-            count=count+barcode[i][2]
-    return count
+    Note that the rank function is unstable with respect to choice of a,b.
+    Because of numerical error, this function can instead return the value of
+    the rank functon at points a',b' very close to a and b, which can be
+    different.  In a more careful implementation (done by tweaking the innards
+    of RIVET) this could be avoided, but shouldn't be a serious issue in our
+    intended applications.  
 
-def rank_norm(module1,module2=None,grid_size=20,fixed_bounds=None,use_weights=True,normalize=False,minimum_rank=0):
-    """If module2==None, approximately computes the approximate (weighted or unweighted) L_1-norm of the rank invariant of module1 on a rectangle.  If module2!=None, computes this for the the difference of the
-        rank invariants of module1 and module2.
-
-    Input:
-        module1,module2: RIVET "precomputed" representations of a persistence
-        module, in Bryn's python bytes format
+    Input: 
+        module1,module2: RIVET "precomputed" representations of
+        a persistence module, in Bryn's python bytes format
 
         grid_size: This is a non-negative integer which should be at least 2.
-            We will compute the norm approximately using a grid_size x grid_size grid.
+        We will compute the norm approximately using a grid_size x grid_size
+        grid.
 
-        fixed_bound: A rivet.bounds object.  Specifies the rectangle over which we compute
-        If none, the bounds are taken to be the bounds for the module provided by RIVET.
+        fixed_bound: A rivet.bounds object.  Specifies the rectangle over which
+        we compute If none, the bounds are taken to be the bounds for the
+        module provided by RIVET.
 
-        use_weights: Boolean; Should we compute the norm in a weighted fashion, so that ranks M(a,b) 
-        with a and b lying (close to) a horizontal or vertical line are weighted less?  
-        Weights used are the same ones as for computing the matching distance.
+        use_weights: Boolean; Should we compute the norm in a weighted fashion,
+        so that ranks M(a,b) with a and b lying (close to) a horizontal or
+        vertical line are weighted less?  Weights used are the same ones as for
+        computing the matching distance.
 
-        normalize: Boolean.  If true, the weights and volume elements are chosen as if
-        the bounding rectangle were a rescaled to be a unit square.
+        normalize: Boolean.  If true, the weights and volume elements are
+        chosen as if the bounding rectangle were a rescaled to be a unit
+        square.
         
-        minimum_rank: Treat all ranks below this value as 0.  [Motivation: For hypothethsis testing where the 
-        hypothesis is of the form: This data has at least k topological features.]
-    """
-    
+        minimum_rank: Treat all ranks below this value as 0.  [Motivation: For
+                hypothethsis testing where the hypothesis is of the form: This
+                data has at least k topological features.] """
+
+    if use_weights:
+        raise ValueError("Weights are not supported yet")
+
     if fixed_bounds is None:
         # determine bounds from the bounds of the given module(s)
         if module2==None:
             bounds = rivet.bounds(module1)
         else:
-            bounds = matching_distance.common_bounds(rivet.bounds(module1),rivet.bounds(module2))
+            bounds = mtching_distance.common_bounds(
+                    rivet.bounds(module1),rivet.bounds(module2))
     else:
         bounds=fixed_bounds
 
@@ -133,8 +128,7 @@ def rank_norm(module1,module2=None,grid_size=20,fixed_bounds=None,use_weights=Tr
     y_increment=(UR[1]-LL[1])/(grid_size-1)
 
     if x_increment==0 or y_increment==0:
-        print('Rectangle is degenerate!  Behavior of the function in this case is not defined.' )
-        return -1
+        raise ValueError('Rectangle is degenerate!  Behavior of the function in this case is not defined.' )
 
     if normalize:
         delta_x = UR[0] - LL[0]
@@ -144,45 +138,62 @@ def rank_norm(module1,module2=None,grid_size=20,fixed_bounds=None,use_weights=Tr
         #we don't need to define delta_x and delta_y if we aren't normalizing
         volume_element=pow(x_increment*y_increment,2)
 
-    norm_so_far=0
+    if volume_element==0:
+        raise ValueError('Rectangle is degenerate!' + \
+                ' Behavior of the function in this case is not defined.' )
     
+    slope_offsets = []
+    birth_deaths = []
+    weights = []
     for x_low in range(grid_size):
         for y_low in range(grid_size):
             for x_high in range(x_low,grid_size):
                 for y_high in range(y_low,grid_size):   
                           
-                    a=[LL[0]+x_low*x_increment,LL[1]+y_low*y_increment]
+                    a=[LL[1]+x_low*x_increment,LL[1]+y_low*y_increment]
                     b=[LL[0]+x_high*x_increment,LL[1]+y_high*y_increment]                   
                     
-                    #TODO: In weighted case, weight should depend on a,b, and normalize.
+                    slope, offset = slope_offset(a, b)
+
                     if use_weights:
                         # if a and b lie on the same vertical or horizontal line, weight is 0.
                         if a[0]==b[0] or a[1]==b[1]:
                             weight=0
                         else:
-                            slope=(b[1]-a[1])/(b[0]-a[0])
                             if normalize:
                                 weight=matching_distance.calculate_weight(slope,True,delta_x,delta_y)
                             else:
                                 weight=matching_distance.calculate_weight(slope)
-                    # else we dont use weights
+                    # else we don't use weights
                     else:
                         weight=1
-
-                    current_rank1=rank(module1,a,b)
-                    if current_rank1<minimum_rank:
-                        current_rank1=0
-                
-                    if module2==None:
-                        current_rank2=0
-                    else:
-                        current_rank2=rank(module2,a,b)
-                        if current_rank2<minimum_rank:
-                            current_rank2=0
                     
-                    norm_so_far=norm_so_far+weight*volume_element*abs(current_rank1-current_rank2)
+                    slope_offsets.append((slope, offset))
+                    birth_deaths.append(
+                            (find_parameter_of_point_on_line(slope, offset, a),
+                             find_parameter_of_point_on_line(slope, offset, b)))
+                    weights.append(weight)
+
+    def cutoff_rank(rank):
+        if rank < minimum_rank:
+            return 0
+        return rank
+
+    barcodes1 = rivet.barcodes(module1, slope_offsets)
+    ranks1 = [cutoff_rank(barcode_rank(bars, b, d))
+            for (_, bars), (b, d) in zip(barcodes1, birth_deaths)]
+
+    if module2 is None:
+        ranks2 = [0] * len(slope_offsets)
+    else:
+        barcodes2 = rivet.barcodes(module2, slope_offsets)
+        ranks2 = [cutoff_rank(barcode_rank(bars, b, d))
+            for (_, bars), (b, d) in zip(barcodes2, birth_deaths)]
+    
+    norm = sum((weight * volume_element * abs(r1 - r2) 
+                for r1, r2, weight in zip(ranks1, ranks2, weights)))
         
-    return norm_so_far
+    return norm
 
 
 
