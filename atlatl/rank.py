@@ -54,7 +54,7 @@ def slope_offset(a, b):
     if a[0] == b[0]:
         sl = 90
     else:
-        sl = (b[1] - a[1]) / (b[0] - a[0])
+        sl = math.degrees(math.atan((b[1] - a[1]) / (b[0] - a[0])))
 
     # 2.Find the offset
     offset = matching_distance.find_offset(sl, a)
@@ -142,11 +142,14 @@ def rank_norm(module1, module2=None, grid_size=20, fixed_bounds=None,
         for y_low in range(grid_size):
             for x_high in range(x_low, grid_size):
                 for y_high in range(y_low, grid_size):
-
+                    
                     a = [LL[1] + x_low * x_increment, LL[1] + y_low * y_increment]
                     b = [LL[0] + x_high * x_increment, LL[1] + y_high * y_increment]
-
+                    
                     slope, offset = slope_offset(a, b)
+                    if slope>90 or slope < 0:
+                        print("slope out of bounds!!!")
+                        return -1
 
                     if use_weights:
                         # if a and b lie on the same vertical or horizontal line, weight is 0.
@@ -171,10 +174,12 @@ def rank_norm(module1, module2=None, grid_size=20, fixed_bounds=None,
         if rank < minimum_rank:
             return 0
         return rank
-
+    
     barcodes1 = rivet.barcodes(module1, slope_offsets)
+
     ranks1 = [cutoff_rank(barcode_rank(bars, b, d))
               for (_, bars), (b, d) in zip(barcodes1, birth_deaths)]
+
 
     if module2 is None:
         ranks2 = [0] * len(slope_offsets)
