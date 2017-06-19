@@ -121,16 +121,15 @@ def rank_norm(module1, module2=None, grid_size=20, fixed_bounds=None,
     LL = bounds.lower
     UR = bounds.upper
 
-    x_increment = (UR[0] - LL[0]) / (grid_size - 1)
-    y_increment = (UR[1] - LL[1]) / (grid_size - 1)
-
+    x_increment = (UR[0] - LL[0]) / grid_size
+    y_increment = (UR[1] - LL[1]) / grid_size
     if x_increment == 0 or y_increment == 0:
         raise ValueError('Rectangle is degenerate!  Behavior of the function in this case is not defined.')
 
     if normalize:
         delta_x = UR[0] - LL[0]
         delta_y = UR[1] - LL[1]
-        volume_element = pow(1 / (grid_size - 1), 4)
+        volume_element = pow(1 / grid_size, 4)
     else:
         # we don't need to define delta_x and delta_y if we aren't normalizing
         volume_element = pow(x_increment * y_increment, 2)
@@ -143,7 +142,7 @@ def rank_norm(module1, module2=None, grid_size=20, fixed_bounds=None,
             for x_high in range(x_low, grid_size):
                 for y_high in range(y_low, grid_size):
                     
-                    a = [LL[1] + x_low * x_increment, LL[1] + y_low * y_increment]
+                    a = [LL[0] + x_low * x_increment, LL[1] + y_low * y_increment]
                     b = [LL[0] + x_high * x_increment, LL[1] + y_high * y_increment]
                     
                     slope, offset = slope_offset(a, b)
@@ -174,13 +173,12 @@ def rank_norm(module1, module2=None, grid_size=20, fixed_bounds=None,
         if rank < minimum_rank:
             return 0
         return rank
-    
+
     barcodes1 = rivet.barcodes(module1, slope_offsets)
 
     ranks1 = [cutoff_rank(barcode_rank(bars, b, d))
               for (_, bars), (b, d) in zip(barcodes1, birth_deaths)]
-
-
+    
     if module2 is None:
         ranks2 = [0] * len(slope_offsets)
     else:
