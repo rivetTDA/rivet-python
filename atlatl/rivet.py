@@ -99,7 +99,8 @@ class Bifiltration:
             out.write("\n")
         out.write("\n")
 
-
+# To make multi_critical (with no appearance_values), initialize with appearance_values=None
+# TODO: set appearance_values to None by default
 class MetricSpace:
     def __init__(self, appearance_label, distance_label, appearance_values, distance_matrix, comment=None):
         """distance_matrix must be upper triangular"""
@@ -108,15 +109,19 @@ class MetricSpace:
         self.distance_label = distance_label
         self.appearance_values = appearance_values
         self.distance_matrix = distance_matrix
-
+    
     def save(self, out):
         out.write('metric\n')
         if self.comment:
             out.write('#')
             out.write(self.comment.replace('\n', '\n#'))
             out.write('\n')
-        out.write(self.appearance_label + '\n')
-        out.write(" ".join([str(s) for s in self.appearance_values]) + "\n")
+        if self.appearance_values is not None:
+            out.write(self.appearance_label + '\n')
+            out.write(" ".join([str(s) for s in self.appearance_values]) + "\n")
+        else:
+            out.write("no function\n")
+            out.write(str(len(self.distance_matrix)) + "\n")
         out.write(self.distance_label + '\n')
         dim = len(self.distance_matrix)
         max_dist = max(*[self.distance_matrix[i][j] for i in range(dim) for j in range(dim)])
@@ -127,7 +132,6 @@ class MetricSpace:
                 counter += 1
                 out.write("%s " % self.distance_matrix[row][col])
             out.write('\n')
-
 
 def compute_point_cloud(cloud, homology=0, x=0, y=0, verify=False):
     return _compute_bytes(cloud, homology, x, y, verify)
