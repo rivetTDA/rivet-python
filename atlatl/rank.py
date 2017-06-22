@@ -3,7 +3,7 @@ import numpy as np
 from atlatl import rivet, matching_distance
 
 
-def find_parameter_of_point_on_line(sl, offset, point):
+def find_parameter_of_point_on_line(sl, offset, pt):
     """Finds the RIVET parameter representation of point on the line
     (sl,offset).  recall that RIVET parameterizes by line length, and takes the
     point where the line intersets the positive x-axis or y-axis to be
@@ -15,21 +15,41 @@ def find_parameter_of_point_on_line(sl, offset, point):
     offset as input, not both.  """
 
     if sl == 90:
-        return point[1]
+        return pt[1]
 
     if sl == 0:
-        return point[0]
+        return pt[0]
 
     # Otherwise the line is neither horizontal or vertical.
-
-    if point[0] == 0 or point[1] == 0:
-        return 0
+    m = math.tan(math.radians(sl))
 
     # Find the point on the line parameterized by 0.
+
     # If offset is positive, this is a point on the y-axis, otherwise, it is
     # a point on the x-axis.
 
-    m = math.tan(math.radians(sl))
+    # Actually, the above is what SHOULD be true, but in the current implementation of RIVET
+    # 0 is the point on the line closest to the origin.
+    
+    #### REMOVE THIS BLOCK OF CODE AND UNCOMMENT THE CODE BELOW AFTER RIVET IS UPDATED
+    ####
+        #next 3 lines are copied from matching_distance.find_offset.
+    b = pt[1] - pt[0] * m
+
+    x_minimizer = -1 * (pt[1] * m - pt[0] * m**2) / (1 + m**2)
+    y_minimizer = m * x_minimizer + b
+
+    unsigned_coordinate = np.sqrt((pt[0] - x_minimizer)**2+(pt[1] - y_minimizer)**2)
+
+    if (pt[0] - x_minimizer) >= 0:
+        return unsigned_coordinate
+    else:
+        return -unsigned_coordinate
+    ####
+    ####
+
+
+    """"
     if offset > 0:
         y_int = point[1] - m * point[0]
         dist = np.sqrt(pow(point[1] - y_int, 2) + pow(point[0], 2))
@@ -44,6 +64,7 @@ def find_parameter_of_point_on_line(sl, offset, point):
             return dist
         else:
             return -dist
+    """
 
 
 def slope_offset(a, b):
@@ -159,6 +180,7 @@ def rank_norm(module1, module2=None, grid_size=20, fixed_bounds=None,
                                 weight = matching_distance.calculate_weight(slope, True, delta_x, delta_y)
                             else:
                                 weight = matching_distance.calculate_weight(slope)
+                
                     # else we don't use weights
                     else:
                         weight = 1
