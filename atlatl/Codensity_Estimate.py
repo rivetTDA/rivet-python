@@ -1,5 +1,5 @@
 import math
-def codensity_estimate(dist_matrix,p,use_percentile=True):
+def codensity_estimate(dist_matrix,p,use_percentile=True,use_gaussian=False):
     
     #The function computes a codensity estimate on a finite metric space.
     #By a codensity estimate we simply mean -1 times a density estimate
@@ -9,6 +9,9 @@ def codensity_estimate(dist_matrix,p,use_percentile=True):
     
     #If use_percentile=False, then the radius parameter is simply taken to be p.
     
+    #TODO: Introduce a normalization option?
+    
+
     #get the radius parameter
     if not use_percentile:
         radius=p
@@ -28,7 +31,11 @@ def codensity_estimate(dist_matrix,p,use_percentile=True):
 
     codens_vector=[]
     for i in range(len(dist_matrix)):
-        #count the number of entries of dist_matrix[i] which are smaller than or equal to radius
-        #and multiply by -1
-        codens_vector.append(-1*(sum(d<=radius for d in dist_matrix[i])-1))
+        if not use_gaussian:
+            #count the number of entries of dist_matrix[i] which are smaller than or equal to radius
+            #and multiply by -1
+            codens_vector.append(-1*(sum(d<=radius for d in dist_matrix[i])-1))
+        else:
+            #use radius as a bandwidth for the gaussian
+            codens_vector.append(-1*(sum(math.exp(-d**2/(2*radius**2))/(radius*math.sqrt(2*math.pi)) for d in dist_matrix[i])-1))
     return codens_vector
