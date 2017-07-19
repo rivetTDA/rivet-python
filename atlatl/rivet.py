@@ -141,8 +141,8 @@ def compute_bifiltration(bifiltration, homology=0, verify=False):
     return _compute_bytes(bifiltration, homology, 0, 0, verify)
 
 
-def compute_metric_space(metric_space, homology=0, verify=False):
-    return _compute_bytes(metric_space, homology, 0, 0, verify)
+def compute_metric_space(metric_space, homology=0,x=0,y=0, verify=False):
+    return _compute_bytes(metric_space, homology, x, y, verify)
 
 
 def _compute_bytes(saveable, homology, x, y, verify):
