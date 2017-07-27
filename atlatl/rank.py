@@ -31,40 +31,20 @@ def find_parameter_of_point_on_line(sl, offset, pt):
     # Actually, the above is what SHOULD be true, but in the current implementation of RIVET
     # 0 is the point on the line closest to the origin.
     
-    #### REMOVE THIS BLOCK OF CODE AND UNCOMMENT THE CODE BELOW AFTER RIVET IS UPDATED
-    ####
-        #next 3 lines are copied from matching_distance.find_offset.
-    b = pt[1] - pt[0] * m
-
-    x_minimizer = -1 * (pt[1] * m - pt[0] * m**2) / (1 + m**2)
-    y_minimizer = m * x_minimizer + b
-
-    unsigned_coordinate = np.sqrt((pt[0] - x_minimizer)**2+(pt[1] - y_minimizer)**2)
-
-    if (pt[0] - x_minimizer) >= 0:
-        return unsigned_coordinate
-    else:
-        return -unsigned_coordinate
-    ####
-    ####
-
-
-    """"
     if offset > 0:
-        y_int = point[1] - m * point[0]
-        dist = np.sqrt(pow(point[1] - y_int, 2) + pow(point[0], 2))
-        if point[0] > 0:
+        y_int = pt[1] - m * pt[0]
+        dist = np.sqrt(pow(pt[1] - y_int, 2) + pow(pt[0], 2))
+        if pt[0] > 0:
             return dist
         else:
             return -dist
     else:
-        x_int = point[0] - point[1] / m
-        dist = np.sqrt(pow(point[1], 2) + pow(point[0] - x_int, 2))
-        if point[1] > 0:
+        x_int = pt[0] - pt[1] / m
+        dist = np.sqrt(pow(pt[1], 2) + pow(pt[0] - x_int, 2))
+        if pt[1] > 0:
             return dist
         else:
             return -dist
-    """
 
 
 def slope_offset(a, b):
