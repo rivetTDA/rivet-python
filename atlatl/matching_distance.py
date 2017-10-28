@@ -158,6 +158,10 @@ def calculate_weight(slope,normalize=False,delta_x=None,delta_y=None):
 #Not too limportant though.  -ML 6/5/17.
 
 def calculate_match(line_distances, normalize, delta_x, delta_y):
+    if delta_x <= 0:
+        raise ValueError("delta_x must be greater than zero")
+    if delta_y <= 0:
+        raise ValueError("delta_y must be greater than zero")
     # now compute matching distance
     m_dist = 0
 

@@ -1,5 +1,9 @@
 import math
+import tempfile
+
 import numpy as np
+import os
+
 from atlatl import rivet, matching_distance
 
 
@@ -192,3 +196,21 @@ def rank_norm(module1, module2=None, grid_size=20, fixed_bounds=None,
                 for r1, r2, weight in zip(ranks1, ranks2, weights)))
 
     return norm
+
+
+def array_rank_norm(lefts, rights):
+    if len(lefts.shape) != 3:
+        raise ValueError(
+            "`lefts` must have shape (# of barcodes, # of bars in each code, 3)")
+    if len(rights.shape) != 3:
+        raise ValueError(
+            "`rights` must have shape (# of barcodes, # of bars in each code, 3)")
+    if lefts.shape[0] != rights.shape[0]:
+        raise ValueError(
+            "First dimension of both arrays must have the same length")
+    results = []
+    for i in range(lefts.shape[0]):
+        left = lefts[i]
+        right = rights[i]
+        results.append(rank_norm(left, right))
+    return np.array(results)
