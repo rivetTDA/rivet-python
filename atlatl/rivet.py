@@ -1,9 +1,12 @@
+import time
+
 from . import barcode
 import subprocess
 import shlex
 import fractions
 import tempfile
 import os
+import shutil
 
 
 """An interface for rivet_console, using the command line
@@ -146,7 +149,8 @@ def compute_metric_space(metric_space, homology=0,x=0,y=0, verify=False):
 
 
 def _compute_bytes(saveable, homology, x, y, verify):
-    with tempfile.TemporaryDirectory() as dir:
+
+    with TempDir() as dir:
         saveable_name = os.path.join(dir, 'rivet_input_data.txt')
         with open(saveable_name, 'w+t') as saveable_file:
             saveable.save(saveable_file)
@@ -163,7 +167,8 @@ def _compute_bytes(saveable, homology, x, y, verify):
 
 def barcodes(bytes, slices):
     """Returns a Barcode for each (angle, offset) tuple in `slices`."""
-    with tempfile.TemporaryDirectory() as dir:
+    # print("barcodes")
+    with TempDir() as dir:
         with open(os.path.join(dir, 'precomputed.rivet'), 'wb') as precomp:
             precomp.write(bytes)
         with open(os.path.join(dir, 'slices.txt'), 'wt') as slice_temp:
@@ -194,7 +199,8 @@ def barcodes_file(input_name, slice_name):
 
 
 def betti(saveable, homology=0, x=0, y=0):
-    with tempfile.TemporaryDirectory() as dir:
+    # print("betti")
+    with TempDir() as dir:
         name = os.path.join(dir, 'rivet-input.txt')
         with open(name, 'wt') as betti_temp:
             saveable.save(betti_temp)
@@ -211,9 +217,34 @@ def bounds_file(name):
     return parse_bounds(subprocess.check_output(shlex.split(cmd)).split(b'\n'))
 
 
+class TempDir(os.PathLike):
+    def __enter__(self):
+        self.dirname = os.path.join(tempfile.gettempdir(),
+                                    'rivet-' + str(os.getpid()) + '-' + str(time.time()))
+        os.mkdir(self.dirname)
+
+        # print("Created:", self.dirname)
+        return self
+
+    def __exit__(self, etype, eval, etb):
+        if etype is None:
+            # print("No error, removing")
+            shutil.rmtree(self.dirname, ignore_errors=True)
+        else:
+            # print(etype, eval, etb)
+            print("Error occurred, leaving RIVET working directory intact: " + self.dirname)
+
+    def __str__(self):
+        return self.dirname
+
+    def __fspath__(self):
+        return self.dirname
+
+
 def bounds(bytes):
+    # print("bounds", len(bytes), "bytes")
     assert len(bytes) > 0
-    with tempfile.TemporaryDirectory() as dir:
+    with TempDir() as dir:
         precomp_name = os.path.join(dir, 'precomp.rivet')
         with open(precomp_name, 'wb') as precomp:
             precomp.write(bytes)

@@ -1,21 +1,59 @@
 import math
-import tempfile
 
 import numpy as np
-import os
 
 from atlatl import rivet, matching_distance
 
 
+def find_parameters(slopes, offsets, points):
+    result = np.zeros(slopes.shape)
+    result[slopes == 90] = 1
+    result[slopes == 0] = 0
+
+    not_extreme = np.logical_and(slopes != 90, slopes != 0)
+    m = np.tan(np.radians(slopes))
+    offset_gt_0 = np.logical_and(not_extreme, offsets > 0)
+
+    pts_gt_0 = points[offset_gt_0]
+
+    # y_int = pt[1] - m * pt[0]
+    # dist = np.sqrt(pow(pt[1] - y_int, 2) + pow(pt[0], 2))
+    # if pt[0] > 0:
+    #     return dist
+    # else:
+    #     return -dist
+
+    y_int = pts_gt_0[:, 1] - m[offset_gt_0] * pts_gt_0[:, 0]
+    dist = np.sqrt(np.power(pts_gt_0[:, 1] - y_int, 2) + np.power(pts_gt_0[:, 0], 2))
+    dist[pts_gt_0[:, 0] <= 0] *= -1
+    result[offset_gt_0] = dist
+
+    # x_int = pt[0] - pt[1] / m
+    # dist = np.sqrt(pow(pt[1], 2) + pow(pt[0] - x_int, 2))
+    # if pt[1] > 0:
+    #     return dist
+    # else:
+    #     return -dist
+
+    offset_lte_0 = np.logical_and(not_extreme, offsets <= 0)
+    pts_lte_0 = points[offset_lte_0]
+
+    x_int = pts_lte_0[:, 0] - pts_lte_0[:, 1] / m[offset_lte_0]
+    dist = np.sqrt(np.power(pts_lte_0[:, 1], 2) + np.power(pts_lte_0[:, 0] - x_int, 2))
+    dist[pts_lte_0[:, 1] <= 0] *= -1
+    result[offset_lte_0] = dist
+
+    return result
+
 def find_parameter_of_point_on_line(sl, offset, pt):
     """Finds the RIVET parameter representation of point on the line
     (sl,offset).  recall that RIVET parameterizes by line length, and takes the
-    point where the line intersets the positive x-axis or y-axis to be
+    point where the line intersects the positive x-axis or y-axis to be
     parameterized by 0.  If the line is itself the x-axis or y-axis, then the
     origin is parameterized by 0.  
     
     WARNING: Code assumes that the point lies on the line, and does not check
-    this.  Relatedly, the function could be written using only slope or or
+    this.  Relatedly, the function could be written using only slope or
     offset as input, not both.  """
 
     if sl == 90:
@@ -55,22 +93,31 @@ def slope_offset(a, b):
     """Determine the line containing a and b, in RIVET's (slope,offset) format.
     If a==b, we will just choose the vertical line."""
 
-    # 1.Find the slope (in degrees)
-    if a[0] == b[0]:
-        sl = 90
-    else:
-        sl = math.degrees(math.atan((b[1] - a[1]) / (b[0] - a[0])))
+    vertical = a[:, 0] == b[:, 0]
+    slopes = np.zeros(len(a))
+    slopes[vertical] = 90
+    not_vertical = np.logical_not(vertical)
+    slopes[not_vertical] = np.degrees(np.arctan(
+        (b[not_vertical, 1] - a[not_vertical, 1]) / (b[not_vertical, 0] - a[not_vertical, 0])))
+    print(slopes)
+
 
     # 2.Find the offset
-    offset = matching_distance.find_offset(sl, a)
-    return sl, offset
+    offsets = matching_distance.find_offsets(slopes, a)
+    return slopes, offsets
 
 
 def barcode_rank(barcode, birth, death):
     """Return the number of bars that are born by 
     `birth` and die after `death`."""
-    return sum([bar.multiplicity for bar in barcode.bars
-                if bar.start <= birth and bar.end > death])
+    arr = barcode.to_array()
+    if len(arr) == 0:
+        return 0
+    included = np.logical_and(arr[:, 0] <= birth, arr[:, 1] > death)
+    return np.sum(arr[:, 2][included])
+
+    # return sum([bar.multiplicity for bar in barcode.bars
+    #             if bar.start <= birth and bar.end > death])
 
 
 def rank_norm(module1, module2=None, grid_size=20, fixed_bounds=None,
@@ -97,7 +144,7 @@ def rank_norm(module1, module2=None, grid_size=20, fixed_bounds=None,
         grid.
 
         fixed_bound: A rivet.bounds object.  Specifies the rectangle over which
-        we compute If none, the bounds are taken to be the bounds for the
+        we compute. If none, the bounds are taken to be the bounds for the
         module provided by RIVET.
 
         use_weights: Boolean; Should we compute the norm in a weighted fashion,
@@ -110,7 +157,7 @@ def rank_norm(module1, module2=None, grid_size=20, fixed_bounds=None,
         square.
         
         minimum_rank: Treat all ranks below this value as 0.  [Motivation: For
-                hypothethsis testing where the hypothesis is of the form: This
+                hypothesis testing where the hypothesis is of the form: This
                 data has at least k topological features.] """
 
     if fixed_bounds is None:
@@ -132,68 +179,61 @@ def rank_norm(module1, module2=None, grid_size=20, fixed_bounds=None,
         raise ValueError('Rectangle is degenerate!  Behavior of the function in this case is not defined.')
 
     if normalize:
-        delta_x = UR[0] - LL[0]
-        delta_y = UR[1] - LL[1]
         volume_element = pow(1 / grid_size, 4)
     else:
         # we don't need to define delta_x and delta_y if we aren't normalizing
         volume_element = pow(x_increment * y_increment, 2)
 
-    slope_offsets = []
-    birth_deaths = []
-    weights = []
+    lows = []
+    highs = []
     for x_low in range(grid_size):
         for y_low in range(grid_size):
             for x_high in range(x_low, grid_size):
                 for y_high in range(y_low, grid_size):
-                    
                     a = [LL[0] + x_low * x_increment, LL[1] + y_low * y_increment]
                     b = [LL[0] + x_high * x_increment, LL[1] + y_high * y_increment]
-                    
-                    slope, offset = slope_offset(a, b)
-                    if slope>90 or slope < 0:
-                        print("slope out of bounds!!!")
-                        return -1
+                    lows.append(a)
+                    highs.append(b)
+    highs = np.array(highs)
+    lows = np.array(lows)
 
-                    if use_weights:
-                        # if a and b lie on the same vertical or horizontal line, weight is 0.
-                        if a[0] == b[0] or a[1] == b[1]:
-                            weight = 0
-                        else:
-                            if normalize:
-                                weight = matching_distance.calculate_weight(slope, True, delta_x, delta_y)
-                            else:
-                                weight = matching_distance.calculate_weight(slope)
-                
-                    # else we don't use weights
-                    else:
-                        weight = 1
+    slopes, offsets = slope_offset(lows, highs)
+    if np.any(slopes < 0) or np.any(slopes > 90):
+        raise ValueError("Slope out of bounds!")
 
-                    slope_offsets.append((slope, offset))
-                    birth_deaths.append(
-                        (find_parameter_of_point_on_line(slope, offset, a),
-                         find_parameter_of_point_on_line(slope, offset, b)))
-                    weights.append(weight)
+    weights = np.ones(len(lows))
+    if use_weights:
+        if normalize:
+            delta_x = UR[0] - LL[0]
+            delta_y = UR[1] - LL[1]
+            weights = matching_distance.calculate_weight(slopes, True, delta_x, delta_y)
+        else:
+            weights = matching_distance.calculate_weight(slopes)
 
-    def cutoff_rank(rank):
-        if rank < minimum_rank:
-            return 0
-        return rank
+        # if a and b lie on the same vertical or horizontal line, weight is 0.
+        weights[lows[:, 0] == highs[:, 0]] = 0
+        weights[lows[:, 1] == highs[:, 1]] = 0
+
+    births = find_parameters(slopes, offsets, np.array(lows))
+    deaths = find_parameters(slopes, offsets, np.array(highs))
+    birth_deaths = np.c_[births, deaths].tolist()
+    slope_offsets = np.c_[slopes, offsets]
 
     barcodes1 = rivet.barcodes(module1, slope_offsets)
 
-    ranks1 = [cutoff_rank(barcode_rank(bars, b, d))
-              for (_, bars), (b, d) in zip(barcodes1, birth_deaths)]
+    ranks1 = np.array([barcode_rank(bars, b, d)
+              for (_, bars), (b, d) in zip(barcodes1, birth_deaths)])
+    ranks1[ranks1 < minimum_rank] = 0
     
     if module2 is None:
-        ranks2 = [0] * len(slope_offsets)
+        ranks2 = np.zeros(len(slope_offsets))
     else:
         barcodes2 = rivet.barcodes(module2, slope_offsets)
-        ranks2 = [cutoff_rank(barcode_rank(bars, b, d))
-                  for (_, bars), (b, d) in zip(barcodes2, birth_deaths)]
+        ranks2 = np.array([barcode_rank(bars, b, d)
+                  for (_, bars), (b, d) in zip(barcodes2, birth_deaths)])
+    ranks2[ranks2 < minimum_rank] = 0
 
-    norm = sum((weight * volume_element * abs(r1 - r2)
-                for r1, r2, weight in zip(ranks1, ranks2, weights)))
+    norm = np.sum(np.abs(ranks1 - ranks2) * weights * volume_element)
 
     return norm
 

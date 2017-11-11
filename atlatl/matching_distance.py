@@ -19,14 +19,36 @@ def find_offset(sl, pt):
 
     b = pt[1] - pt[0] * m
 
-    x_minimizer = -1 * (pt[1] * m - pt[0] * m**2) / (1 + m**2)
+    x_minimizer = -1 * (pt[1] * m - pt[0] * m ** 2) / (1 + m ** 2)
     y_minimizer = m * x_minimizer + b
-    unsigned_dist = np.sqrt(x_minimizer**2 + y_minimizer**2)
+    unsigned_dist = np.sqrt(x_minimizer ** 2 + y_minimizer ** 2)
 
     if b > 0:
         return unsigned_dist
     else:
         return -unsigned_dist
+
+
+def find_offsets(slopes, points):
+    # find the offset parameter for the line of given slope passing through the point
+    # slope is in degrees
+
+    m = np.tan(np.radians(slopes))
+    # equation of line is y=mx+(pt[1]-pt[0]m)
+    # We want the point x,y which minimizes squared distance to origin.
+    # i.e., x^2(1+m^2)+2x(pt[1]m-pt[0]m^2)+c
+    # minimized when derivative is 0, i.e.,
+    # x=-2(pt[1]m-pt[0]m^2)/(1+m^2)
+
+    b = points[:, 1] - points[:, 0] * m
+
+    x_minimizer = -1 * (points[:, 1] * m - points[:, 0] * m ** 2) / (1 + m ** 2)
+    y_minimizer = m * x_minimizer + b
+    dist = np.sqrt(x_minimizer ** 2 + y_minimizer ** 2)
+
+    dist[b <= 0] *= -1
+    dist[slopes == 90] = -points[slopes == 90, 0]
+    return dist
 
 
 def common_bounds(bounds1: rivet.Bounds, bounds2: rivet.Bounds):
@@ -120,21 +142,21 @@ def generate_lines(grid_size, upper_left, lower_right):
     return lines
 
 
-def calculate_weight(slope,normalize=False,delta_x=None,delta_y=None):
+def calculate_weight(slopes, normalize=False, delta_x=None, delta_y=None):
     # When computing the matching distance, each line slope considered is assigned a weight.
     # This function computes that weight.  It will also be used elsewhere to compute a 
     # "weighted norm" of a rank function.
-   
+
     # first, let's recall how the re-weighting works in the un-normalized case.
     # According to the definition of the matching distance, we choose
     # the weight so that if the interleaving distance between Mod1 and Mod2
     # is 1, then the weighted bottleneck distance between the slices is at most 1.
 
-    m = np.tan(np.radians(slope))
+    m = np.tan(np.radians(slopes))
 
     if not normalize:
-        q = max(m, 1 / m)
-        w = 1 / np.sqrt(1 + q**2)
+        q = np.maximum(m, 1 / m)
+        w = 1 / np.sqrt(1 + q ** 2)
 
     else:
         # next, let's consider the normalized case. If the un-normalized slope
@@ -146,16 +168,17 @@ def calculate_weight(slope,normalize=False,delta_x=None,delta_y=None):
 
         # so the associated weight in the normalized case is given by
         q = max(mn, 1 / mn)
-        w = 1 / np.sqrt(1 + q**2)
+        w = 1 / np.sqrt(1 + q ** 2)
 
         # of course, this code can be made more compact, but hopefully this
         # way is readable
-    
+
     return w
 
-#TODO: Now that I've separated out the code to compute the weight, 
-#perhaps this function could be absorbed back into the main function.
-#Not too limportant though.  -ML 6/5/17.
+
+# TODO: Now that I've separated out the code to compute the weight,
+# perhaps this function could be absorbed back into the main function.
+# Not too limportant though.  -ML 6/5/17.
 
 def calculate_match(line_distances, normalize, delta_x, delta_y):
     if delta_x <= 0:
@@ -171,18 +194,17 @@ def calculate_match(line_distances, normalize, delta_x, delta_y):
         # the line, and also the normalization, which changes both the effective
         # weight and the effective bottleneck distance.    
 
-        w=calculate_weight(slope,normalize,delta_x,delta_y)
-            
+        w = calculate_weight(slope, normalize, delta_x, delta_y)
+
         # moreover, normalization changes the length of a line segment along the line (slope,offset),
         # and hence also the bottleneck distance, by a factor of
-        
+
         if normalize:
-            m = np.tan(np.radians(slope))    
+            m = np.tan(np.radians(slope))
             bottleneck_stretch = np.sqrt(
-                ((m / delta_y)**2 + (1 / delta_x)**2) / (m**2 + 1))
+                ((m / delta_y) ** 2 + (1 / delta_x) ** 2) / (m ** 2 + 1))
         else:
             bottleneck_stretch = 1
         m_dist = max(m_dist, w * raw_distance * bottleneck_stretch)
 
     return m_dist
-

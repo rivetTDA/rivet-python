@@ -42,7 +42,7 @@ class Barcode(object):
         return Barcode([be for b in self.bars for be in b.expand()])
 
     def to_array(self):
-        """Returns a numpy array [[start1, end1], [start2,end2]...].
+        """Returns a numpy array [[start1, end1, multiplicity1], [start2, end2, multiplicity2]...].
         Note that all bars are expanded, so the same start, end may
         occur multiple times."""
         if len(self.bars):
