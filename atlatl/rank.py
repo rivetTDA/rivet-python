@@ -99,8 +99,6 @@ def slope_offset(a, b):
     not_vertical = np.logical_not(vertical)
     slopes[not_vertical] = np.degrees(np.arctan(
         (b[not_vertical, 1] - a[not_vertical, 1]) / (b[not_vertical, 0] - a[not_vertical, 0])))
-    print(slopes)
-
 
     # 2.Find the offset
     offsets = matching_distance.find_offsets(slopes, a)
@@ -111,13 +109,8 @@ def barcode_rank(barcode, birth, death):
     """Return the number of bars that are born by 
     `birth` and die after `death`."""
     arr = barcode.to_array()
-    if len(arr) == 0:
-        return 0
     included = np.logical_and(arr[:, 0] <= birth, arr[:, 1] > death)
-    return np.sum(arr[:, 2][included])
-
-    # return sum([bar.multiplicity for bar in barcode.bars
-    #             if bar.start <= birth and bar.end > death])
+    return np.sum(arr[included, 2])
 
 
 def rank_norm(module1, module2=None, grid_size=20, fixed_bounds=None,
@@ -221,10 +214,11 @@ def rank_norm(module1, module2=None, grid_size=20, fixed_bounds=None,
 
     barcodes1 = rivet.barcodes(module1, slope_offsets)
 
-    ranks1 = np.array([barcode_rank(bars, b, d)
+    ranks1 = np.array(
+       [barcode_rank(bars, b, d)
               for (_, bars), (b, d) in zip(barcodes1, birth_deaths)])
     ranks1[ranks1 < minimum_rank] = 0
-    
+
     if module2 is None:
         ranks2 = np.zeros(len(slope_offsets))
     else:
