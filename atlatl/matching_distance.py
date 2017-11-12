@@ -155,7 +155,9 @@ def calculate_weight(slopes, normalize=False, delta_x=None, delta_y=None):
     m = np.tan(np.radians(slopes))
 
     if not normalize:
-        q = np.maximum(m, 1 / m)
+        recip = np.zeros(len(m))
+        recip[m != 0] = 1/m[m != 0]
+        q = np.maximum(m, recip)
         w = 1 / np.sqrt(1 + q ** 2)
 
     else:
@@ -194,7 +196,7 @@ def calculate_match(line_distances, normalize, delta_x, delta_y):
         # the line, and also the normalization, which changes both the effective
         # weight and the effective bottleneck distance.    
 
-        w = calculate_weight(slope, normalize, delta_x, delta_y)
+        w = calculate_weight(np.array([slope]), normalize, delta_x, delta_y)
 
         # moreover, normalization changes the length of a line segment along the line (slope,offset),
         # and hence also the bottleneck distance, by a factor of
