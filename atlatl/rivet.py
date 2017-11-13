@@ -167,7 +167,6 @@ def _compute_bytes(saveable, homology, x, y, verify):
 
 def barcodes(bytes, slices):
     """Returns a Barcode for each (angle, offset) tuple in `slices`."""
-    # print("barcodes")
     with TempDir() as dir:
         with open(os.path.join(dir, 'precomputed.rivet'), 'wb') as precomp:
             precomp.write(bytes)
@@ -223,15 +222,12 @@ class TempDir(os.PathLike):
                                     'rivet-' + str(os.getpid()) + '-' + str(time.time()))
         os.mkdir(self.dirname)
 
-        # print("Created:", self.dirname)
         return self
 
     def __exit__(self, etype, eval, etb):
         if etype is None:
-            # print("No error, removing")
             shutil.rmtree(self.dirname, ignore_errors=True)
         else:
-            # print(etype, eval, etb)
             print("Error occurred, leaving RIVET working directory intact: " + self.dirname)
 
     def __str__(self):

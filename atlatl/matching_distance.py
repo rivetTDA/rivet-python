@@ -113,7 +113,28 @@ def matching_distance(module1, module2, grid_size, normalize, fixed_bounds=None)
 
     delta_x = UR[0] - LL[0]
     delta_y = UR[1] - LL[1]
-    return calculate_match(zip(lines, raw_distances), normalize, delta_x, delta_y)
+    # now compute matching distance
+
+    # to determine the weight of a line with the given slope,
+    # we need to take into account both the weight coming from slope of
+    # the line, and also the normalization, which changes both the effective
+    # weight and the effective bottleneck distance.
+
+    slope = line_distances[:, 0]
+    raw_distance = line_distances[:, 1]
+    w = calculate_weight(slope, normalize, delta_x, delta_y)
+
+    # moreover, normalization changes the length of a line segment along the line (slope,offset),
+    # and hence also the bottleneck distance, by a factor of
+    if normalize:
+        m = np.tan(np.radians(slope))
+        bottleneck_stretch = np.sqrt(
+            ((m / delta_y) ** 2 + (1 / delta_x) ** 2) / (m ** 2 + 1))
+    else:
+        bottleneck_stretch = 1
+
+    m_dist = np.max(w * raw_distance * bottleneck_stretch)
+    return m_dist
 
 
 def generate_lines(grid_size, upper_left, lower_right):
@@ -177,36 +198,3 @@ def calculate_weight(slopes, normalize=False, delta_x=None, delta_y=None):
 
     return w
 
-
-# TODO: Now that I've separated out the code to compute the weight,
-# perhaps this function could be absorbed back into the main function.
-# Not too limportant though.  -ML 6/5/17.
-
-def calculate_match(line_distances, normalize, delta_x, delta_y):
-    if delta_x <= 0:
-        raise ValueError("delta_x must be greater than zero")
-    if delta_y <= 0:
-        raise ValueError("delta_y must be greater than zero")
-    # now compute matching distance
-    m_dist = 0
-
-    for (slope, _), raw_distance in line_distances:
-        # To determine the weight of a line with the given slope,
-        # we need to take into account both the weight coming from slope of
-        # the line, and also the normalization, which changes both the effective
-        # weight and the effective bottleneck distance.    
-
-        w = calculate_weight(np.array([slope]), normalize, delta_x, delta_y)
-
-        # moreover, normalization changes the length of a line segment along the line (slope,offset),
-        # and hence also the bottleneck distance, by a factor of
-
-        if normalize:
-            m = np.tan(np.radians(slope))
-            bottleneck_stretch = np.sqrt(
-                ((m / delta_y) ** 2 + (1 / delta_x) ** 2) / (m ** 2 + 1))
-        else:
-            bottleneck_stretch = 1
-        m_dist = max(m_dist, w * raw_distance * bottleneck_stretch)
-
-    return m_dist
