@@ -120,8 +120,7 @@ def matching_distance(module1, module2, grid_size, normalize, fixed_bounds=None)
     # the line, and also the normalization, which changes both the effective
     # weight and the effective bottleneck distance.
 
-    slope = line_distances[:, 0]
-    raw_distance = line_distances[:, 1]
+    slope = lines[:, 0]
     w = calculate_weight(slope, normalize, delta_x, delta_y)
 
     # moreover, normalization changes the length of a line segment along the line (slope,offset),
@@ -133,7 +132,7 @@ def matching_distance(module1, module2, grid_size, normalize, fixed_bounds=None)
     else:
         bottleneck_stretch = 1
 
-    m_dist = np.max(w * raw_distance * bottleneck_stretch)
+    m_dist = np.max(w * raw_distances * bottleneck_stretch)
     return m_dist
 
 
