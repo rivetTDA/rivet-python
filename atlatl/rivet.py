@@ -63,17 +63,17 @@ class PointCloud:
                             for line in str(self.comments).split("\n")])
         out.write("points\n")
         out.write(str(self.dimension) + "\n")
-        out.write(str(self.max_dist) + "\n")
+        out.write('{:f}'.format(self.max_dist) + "\n")
         if self.second_param_name is not None:
             out.write(self.second_param_name + "\n")
         else:
             out.write("no function\n")
         for p in self.points:
             for c in p.coords:
-                out.write(str(c))
+                out.write('{:f}'.format(c))
                 out.write(" ")
             if self.second_param_name is not None:
-                out.write(str(p.appearance))
+                out.write('{:f} '.format(p.appearance))
             out.write("\n")
         out.write("\n")
 
@@ -94,10 +94,10 @@ class Bifiltration:
         out.write(self.y_label + '\n')
         for p in self.points:
             for c in p.coords:
-                out.write(str(c))
+                out.write('{:f} '.format(c))
                 out.write(" ")
             for b in p.appearance:
-                out.write(str(b))
+                out.write('{:f} '.format(b))
                 out.write(" ")
             out.write("\n")
         out.write("\n")
@@ -114,6 +114,8 @@ class MetricSpace:
         self.distance_matrix = distance_matrix
     
     def save(self, out):
+        out.seek(0)
+        out.truncate()
         out.write('metric\n')
         if self.comment:
             out.write('#')
@@ -121,19 +123,18 @@ class MetricSpace:
             out.write('\n')
         if self.appearance_values is not None:
             out.write(self.appearance_label + '\n')
-            out.write(" ".join([str(s) for s in self.appearance_values]) + "\n")
+            out.write(" ".join(['{:f} '.format(s) for s in self.appearance_values]) + "\n")
         else:
             out.write("no function\n")
             out.write(str(len(self.distance_matrix)) + "\n")
         out.write(self.distance_label + '\n')
         dim = len(self.distance_matrix)
         max_dist = max(*[self.distance_matrix[i][j] for i in range(dim) for j in range(dim)])
-        out.write(str(max_dist) + '\n')
-        counter = 0
+        out.write('{:f}'.format(max_dist) + '\n')
         for row in range(dim):
             for col in range(row + 1, dim):
-                counter += 1
-                out.write("%s " % self.distance_matrix[row][col])
+                #This line determines the precise representation of the output format.
+                out.write('{:f} '.format(self.distance_matrix[row][col]))
             out.write('\n')
 
 def compute_point_cloud(cloud, homology=0, x=0, y=0, verify=False):
