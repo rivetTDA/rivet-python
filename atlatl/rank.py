@@ -109,6 +109,8 @@ def barcode_rank(barcode, birth, death):
     """Return the number of bars that are born by 
     `birth` and die after `death`."""
     arr = barcode.to_array()
+    if arr.shape[0] == 0:
+        return 0
     included = np.logical_and(arr[:, 0] <= birth, arr[:, 1] > death)
     return np.sum(arr[included, 2])
 
