@@ -42,5 +42,5 @@ class Barcode(object):
         return Barcode([be for b in self.bars for be in b.expand()])
 
     def to_array(self):
-        """Returns a numpy array [[start2, end1, multiplicity1], [start2, end2, multiplicity2]...]."""
+        """Returns a numpy array [[start1, end1, multiplicity1], [start2, end2, multiplicity2]...]."""
         return np.array([(b.start, b.end, b.multiplicity) for b in self.bars])
