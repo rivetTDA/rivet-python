@@ -1,4 +1,4 @@
-from atlatl import rivet, rank
+from pyrivet import rivet, rank
 import math
 
 prism_3 = rivet.Bifiltration("x_label", "y_label", [

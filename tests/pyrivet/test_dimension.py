@@ -5,9 +5,9 @@ import math
 
 import sys
 
-from atlatl import rivet, hera, barcode, matching_distance
+from pyrivet import rivet, hera, barcode, matching_distance
 import numpy as np
-from atlatl.dimension_distance import SplitMat, Dimension, DimensionQueryResult
+from pyrivet.dimension_distance import SplitMat, Dimension, DimensionQueryResult
 
 
 def test_splitmat():

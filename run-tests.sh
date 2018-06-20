@@ -16,9 +16,9 @@
 
 set -ev
 
-pip freeze | grep -qi /atlatl || {
-    echo "You must install atlatl in editable mode using \"pip install -e\""`
-        `" before calling "$(basename "$0")
+pip freeze | grep -qi pyrivet || {
+    echo "You must install pyrivet in editable mode using \"pip install -e\"
+     before calling "$(basename "$0")
     exit 1
 }
 

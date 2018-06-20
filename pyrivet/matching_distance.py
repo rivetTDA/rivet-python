@@ -1,7 +1,7 @@
 import math
 import numpy as np
-from atlatl import rivet, barcode, hera
-from atlatl.rivet import Point, PointCloud
+from pyrivet import rivet, barcode, hera
+from pyrivet.rivet import Point, PointCloud
 
 
 def find_offset(sl, pt):
@@ -120,7 +120,7 @@ def matching_distance(module1, module2, grid_size, normalize, fixed_bounds=None)
     # the line, and also the normalization, which changes both the effective
     # weight and the effective bottleneck distance.
 
-    slope = lines[:, 0]
+    slope = np.array(lines)[:, 0]
     w = calculate_weight(slope, normalize, delta_x, delta_y)
 
     # moreover, normalization changes the length of a line segment along the line (slope,offset),
@@ -159,6 +159,7 @@ def generate_lines(grid_size, upper_left, lower_right):
             for j in range(grid_size):
                 offset = LR_offset + j * (UL_offset - LR_offset) / (grid_size - 1)
                 lines.append((slope, float(offset)))
+    assert lines
     return lines
 
 
@@ -189,7 +190,7 @@ def calculate_weight(slopes, normalize=False, delta_x=None, delta_y=None):
         mn = m * delta_x / delta_y
 
         # so the associated weight in the normalized case is given by
-        q = max(mn, 1 / mn)
+        q = np.max(np.vstack([mn, 1 / mn]), axis=0)
         w = 1 / np.sqrt(1 + q ** 2)
 
         # of course, this code can be made more compact, but hopefully this

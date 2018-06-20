@@ -17,5 +17,5 @@
 set -ev
 set -o pipefail
 
-flake8 --config setup.cfg atlatl
+flake8 --config setup.cfg pyrivet
 rst-lint *.rst | { grep -v "is clean.$" || true; }

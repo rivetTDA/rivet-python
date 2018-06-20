@@ -18,9 +18,9 @@
 
 set -ev
 
-if [ ! -f atlatl/__init__.py ]
+if [ ! -f pyrivet/__init__.py ]
 then
-    echo "Run "$(basename "$0")" from the root of the Atlatl repository"
+    echo "Run "$(basename "$0")" from the root of the pyrivet repository"
     exit 1
 fi
 
@@ -95,7 +95,7 @@ else
 fi
 
 # optional, but highly recommended: create a virtualenv to isolate tests
-venv=$(mktemp -u atlatl_pr_venv_XXXXX) || \
+venv=$(mktemp -u pyrivet_pr_venv_XXXXX) || \
     exit_with_error "mktemp -u error"
 $create_venv $venv || {
     exit_with_error "virtualenv creation failed"
@@ -105,9 +105,9 @@ $activate_venv $venv || {
     exit_with_error "virtualenv activation failed"
 }
 
-# install atlatl in editable mode (required for testing)
+# install pyrivet in editable mode (required for testing)
 pip3 install $ignore_installed -U -e . || \
-    exit_with_error_and_venv "pip3 failed to install atlatl"
+    exit_with_error_and_venv "pip3 failed to install pyrivet"
 
 # install developer dependencies
 pip3 install $ignore_installed -U -r requirements-dev.txt || \

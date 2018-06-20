@@ -97,7 +97,7 @@ class BuildExt(build_ext):
 
 
 setup(
-    name='atlatl',
+    name='pyrivet',
     use_scm_version=True,
     setup_requires=[
         # 'cython',
@@ -120,7 +120,7 @@ setup(
     ],
     author='Princeton Neuroscience Institute and Intel Corporation',
     author_email='bryn.keller@intel.com',
-    url='https://github.com/IntelPNI/atlatl',
+    url='https://github.com/IntelPNI/pyrivet',
     description='Algebraic Topology Loves All These Libraries',
     license='Apache 2',
     keywords='topology, algebraic topology, topological data analysis',

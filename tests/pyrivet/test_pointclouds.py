@@ -1,5 +1,5 @@
 # Borrowed from https://github.com/IntelPNI/brainiak-extras
-from atlatl import rivet, hera, barcode
+from pyrivet import rivet, hera, barcode
 
 inf = float('inf')
 

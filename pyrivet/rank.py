@@ -2,7 +2,7 @@ import math
 
 import numpy as np
 
-from atlatl import rivet, matching_distance
+from pyrivet import rivet, matching_distance
 
 
 def find_parameters(slopes, offsets, points):
