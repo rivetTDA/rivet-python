@@ -1,7 +1,8 @@
-atlatl
+pyrivet
 ======
 
-Algebraic Topology Loves All These Libraries.
+PyRIVET is a Python API for interacting with RIVET_, which is a tool for calculating and
+visualizing 2-parameter persistent homology, which is useful for topological data analysis (TDA).
 
 Requirements
 ------------
@@ -15,7 +16,7 @@ If you have RIVET input files already:
 
 .. code-block:: python
 
-    from atlatl import rivet, barcode, hera
+    from pyrivet import rivet, barcode, hera
 
     # Precompute if needed, assuming valid input data in my_file_name1 and my_file_name2
     computed_name_1 = rivet.compute_file(my_file_name1, homology=0, x=10, y=10)
@@ -34,8 +35,8 @@ If you're working with in-memory data:
 
 .. code-block:: python
 
-    from atlatl import rivet, barcode, hera
-    from atlatl.rivet import Point, PointCloud
+    from pyrivet import rivet, barcode, hera
+    from pyrivet.rivet import Point, PointCloud
 
     # Create some data:
     points1 = PointCloud([
