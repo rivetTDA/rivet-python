@@ -51,16 +51,6 @@ def find_offsets(slopes, points):
     return dist
 
 
-def common_bounds(bounds1: rivet.Bounds, bounds2: rivet.Bounds):
-    # the lower left bound taken to be the min for the two modules,
-    # and the upper right taken to be the max for the two modules.
-    LL = [min(bounds1.lower[0], bounds2.lower[0]),
-          min(bounds1.lower[1], bounds2.lower[1])]
-    UR = [max(bounds1.upper[0], bounds2.upper[0]),
-          max(bounds1.upper[1], bounds2.upper[1])]
-    return rivet.Bounds(LL, UR)
-
-
 def matching_distance(module1, module2, grid_size, normalize, fixed_bounds=None):
     """Computes the approximate matching distance between two 2-parameter persistence modules using
     RIVET's command-line interface.
@@ -73,14 +63,14 @@ def matching_distance(module1, module2, grid_size, normalize, fixed_bounds=None)
             We will choose grid_size values of slope and also choose
             grid_size offset values, for each slope.
 
-        normalize: Boolean; True iff we compute the distances with constants 
+        normalize: Boolean; True iff we compute the distances with constants
             chosen to simulate the situation where
             the coordinates are rescaled so that UR-LL=[1,1]?
 
-        fixed_bounds is a rivet.Bounds, or None. If provided, fixed_bounds 
+        fixed_bounds is a rivet.Bounds, or None. If provided, fixed_bounds
             specifies the bounds to work with.
-            The purpose of this latter option is to allow the user to compute 
-            matching distances with uniform precision over a large collection of 2-D 
+            The purpose of this latter option is to allow the user to compute
+            matching distances with uniform precision over a large collection of 2-D
             persistence modules, which may exhibit features at different scales.
     """
     # First, use fixed_bounds to set the upper right corner and lower-left
@@ -89,7 +79,7 @@ def matching_distance(module1, module2, grid_size, normalize, fixed_bounds=None)
         # otherwise, determine bounds from the bounds of the two modules
         bounds1 = rivet.bounds(module1)
         bounds2 = rivet.bounds(module2)
-        fixed_bounds = common_bounds(bounds1, bounds2)
+        fixed_bounds = bounds1.common_bounds(bounds2)
     LL = fixed_bounds.lower
     UR = fixed_bounds.upper
     UL = (LL[0], UR[1])

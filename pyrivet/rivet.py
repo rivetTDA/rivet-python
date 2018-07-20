@@ -8,7 +8,6 @@ import tempfile
 import os
 import shutil
 
-
 """An interface for rivet_console, using the command line
 and subprocesses."""
 
@@ -102,6 +101,7 @@ class Bifiltration:
             out.write("\n")
         out.write("\n")
 
+
 # To make multi_critical (with no appearance_values), initialize with appearance_values=None
 # TODO: set appearance_values to None by default
 class MetricSpace:
@@ -112,7 +112,7 @@ class MetricSpace:
         self.distance_label = distance_label
         self.appearance_values = appearance_values
         self.distance_matrix = distance_matrix
-    
+
     def save(self, out):
         out.seek(0)
         out.truncate()
@@ -133,9 +133,10 @@ class MetricSpace:
         out.write('{:f}'.format(max_dist) + '\n')
         for row in range(dim):
             for col in range(row + 1, dim):
-                #This line determines the precise representation of the output format.
+                # This line determines the precise representation of the output format.
                 out.write('{:f} '.format(self.distance_matrix[row][col]))
             out.write('\n')
+
 
 def compute_point_cloud(cloud, homology=0, x=0, y=0, verify=False):
     return _compute_bytes(cloud, homology, x, y, verify)
@@ -145,12 +146,11 @@ def compute_bifiltration(bifiltration, homology=0, verify=False):
     return _compute_bytes(bifiltration, homology, 0, 0, verify)
 
 
-def compute_metric_space(metric_space, homology=0,x=0,y=0, verify=False):
+def compute_metric_space(metric_space, homology=0, x=0, y=0, verify=False):
     return _compute_bytes(metric_space, homology, x, y, verify)
 
 
 def _compute_bytes(saveable, homology, x, y, verify):
-
     with TempDir() as dir:
         saveable_name = os.path.join(dir, 'rivet_input_data.txt')
         with open(saveable_name, 'w+t') as saveable_file:
@@ -249,12 +249,27 @@ def bounds(bytes):
 
 
 class Bounds:
-    def __init__(self, lower, upper):
-        self.lower = lower
-        self.upper = upper
+    """The lower left and upper right corners of a rectangle, used to capture the parameter range for a RIVET
+    2-parameter persistence module"""
+
+    def __init__(self, lower_left, upper_right):
+        self.lower_left = lower_left
+        self.upper_right = upper_right
 
     def __repr__(self):
-        return "Bounds(%s, %s)" % (self.lower, self.upper)
+        return "Bounds(lower_left=%s, upper_right=%s)" % (self.lower_left, self.upper_right)
+
+    def common_bounds(self, other: 'Bounds'):
+        """Returns a minimal Bounds that encloses both self and other"""
+
+        # TODO: rename to 'union'?
+        # the lower left bound taken to be the min for the two modules,
+        # and the upper right taken to be the max for the two modules.
+        lower_left = [min(self.lower_left[0], other.lower_left[0]),
+                      min(self.lower_left[1], other.lower_left[1])]
+        upper_right = [max(self.upper_right[0], other.upper_right[0]),
+                       max(self.upper_right[1], other.upper_right[1])]
+        return Bounds(lower_left, upper_right)
 
 
 def parse_bounds(lines):
@@ -282,8 +297,8 @@ class Dimensions:
 
     def __eq__(self, other):
         return isinstance(other, Dimensions) \
-            and self.x_grades == other.x_grades \
-            and self.y_grades == other.y_grades
+               and self.x_grades == other.x_grades \
+               and self.y_grades == other.y_grades
 
 
 class MultiBetti:
