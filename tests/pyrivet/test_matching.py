@@ -138,7 +138,7 @@ def offset_point(point: rivet.Point, x, y):
 
 def offset(bifiltration: rivet.Bifiltration, x, y):
     return rivet.Bifiltration(bifiltration.x_label, bifiltration.y_label,
-                              [offset_point(p, x, y) for p in bifiltration.points])
+                              [offset_point(p, x, y) for p in bifiltration.simplices])
 
 
 def test_overlaps_grid_5():
