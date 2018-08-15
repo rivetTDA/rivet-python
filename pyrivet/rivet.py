@@ -16,35 +16,24 @@ and subprocesses."""
 rivet_executable = 'rivet_console'
 
 
-class Point:
-    def __init__(self, *coordinates, appearance=None):
-        self.appearance = appearance
-        self.coordinates = coordinates
-
-    @property
-    def dimension(self):
-        return len(self.coordinates)
-
-
-def points(*tuples, appearance=None):
-    return [Point(*tup, appearance=appearance) for tup in tuples]
-
-
 class PointCloud:
-    def __init__(self, points, second_param_name=None,
+    def __init__(self, points, appearance=None, second_param_name=None,
                  comments=None, max_dist=None):
         if second_param_name:
             self.second_param_name = second_param_name
         else:
             self.second_param_name = None
-        self.points = points
+        self.points = np.array(points)
+        self._appearance_has_len = hasattr(appearance, '__len__')
+        if self._appearance_has_len:
+            self.appearance = np.array(appearance)
+            if len(appearance) != len(points):
+                raise ValueError('appearance must either be None, a scalar, '
+                                 'or a sequence of the same length as the points')
+        else:
+            self.appearance = appearance
         self.comments = comments
-        self.dimension = points[0].dimension
-        for i, p in enumerate(points):
-            if p.dimension != self.dimension:
-                raise ValueError("Expected points of dimension %d,"
-                                 " but point at position %d has dimension %d"
-                                 % (self.dimension, i, p.dimension))
+        self.dimension = self.points.shape[1]
         self.max_dist = max_dist or self._calc_max_dist()
 
     def _calc_max_dist(self):
@@ -69,12 +58,15 @@ class PointCloud:
             out.write(self.second_param_name + "\n")
         else:
             out.write("no function\n")
-        for p in self.points:
-            for c in p.coordinates:
+        for i, p in enumerate(self.points):
+            for c in p:
                 out.write('{:f}'.format(c))
                 out.write(" ")
             if self.second_param_name is not None:
-                out.write('{:f} '.format(p.appearance or 0))
+                if self._appearance_has_len:
+                    out.write('{:f} '.format(self.appearance[i]))
+                else:
+                    out.write('{:f} '.format(self.appearance or 0))
             out.write("\n")
         out.write("\n")
 
@@ -295,7 +287,7 @@ class Dimensions:
         self.y_grades = y_grades
 
     def __repr__(self):
-        return "Dimensions(%s, %s)" % (self.x_grades, self.y_grades)
+        return "Dimensions(x_grades=%s, y_grades=%s)" % (self.x_grades, self.y_grades)
 
     def __eq__(self, other):
         return isinstance(other, Dimensions) \

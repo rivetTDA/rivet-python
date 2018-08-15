@@ -1,7 +1,5 @@
-import math
 import numpy as np
 from pyrivet import rivet, barcode, hera
-from pyrivet.rivet import Point, PointCloud
 
 
 def find_offset(sl, pt):
