@@ -17,17 +17,17 @@ rivet_executable = 'rivet_console'
 
 
 class Point:
-    def __init__(self, appearance, *coords):
+    def __init__(self, *coordinates, appearance=None):
         self.appearance = appearance
-        self.coords = coords
+        self.coordinates = coordinates
 
     @property
     def dimension(self):
-        return len(self.coords)
+        return len(self.coordinates)
 
 
-def points(tuples, appearance=0):
-    return [Point(appearance, *tup) for tup in tuples]
+def points(*tuples, appearance=None):
+    return [Point(*tup, appearance=appearance) for tup in tuples]
 
 
 class PointCloud:
@@ -51,7 +51,7 @@ class PointCloud:
         # Simplest possible max distance measure
         lo, hi = 0, 0
         for p in self.points:
-            for coord in p.coords:
+            for coord in p.coordinates:
                 if coord < lo:
                     lo = coord
                 if coord > hi:
@@ -70,11 +70,11 @@ class PointCloud:
         else:
             out.write("no function\n")
         for p in self.points:
-            for c in p.coords:
+            for c in p.coordinates:
                 out.write('{:f}'.format(c))
                 out.write(" ")
             if self.second_param_name is not None:
-                out.write('{:f} '.format(p.appearance))
+                out.write('{:f} '.format(p.appearance or 0))
             out.write("\n")
         out.write("\n")
 
@@ -94,7 +94,7 @@ class Bifiltration:
         out.write(self.x_label + '\n')
         out.write(self.y_label + '\n')
         for p in self.points:
-            for c in p.coords:
+            for c in p.coordinates:
                 out.write('{:f} '.format(c))
                 out.write(" ")
             for b in p.appearance:
@@ -325,7 +325,7 @@ class MultiBetti:
         self.xi_2 = xi_2
 
     def __repr__(self):
-        return "MultiBetti(%s, %s, %s, %s, %s)" % \
+        return "MultiBetti(dimensions=%s, graded_rank=%s, xi_0=%s, xi_1=%s, xi_2=%s)" % \
                (self.dimensions, self.graded_rank, self.xi_0, self.xi_1, self.xi_2)
 
 

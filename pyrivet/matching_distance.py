@@ -80,8 +80,8 @@ def matching_distance(module1, module2, grid_size, normalize, fixed_bounds=None)
         bounds1 = rivet.bounds(module1)
         bounds2 = rivet.bounds(module2)
         fixed_bounds = bounds1.common_bounds(bounds2)
-    LL = fixed_bounds.lower
-    UR = fixed_bounds.upper
+    LL = fixed_bounds.lower_left
+    UR = fixed_bounds.upper_right
     UL = (LL[0], UR[1])
     LR = (UR[0], LL[1])
     # print("LL", LL)

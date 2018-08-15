@@ -7,7 +7,7 @@ import sys
 
 from pyrivet import rivet, hera, barcode, matching_distance
 import numpy as np
-from pyrivet.dimension_distance import SplitMat, Dimension, DimensionQueryResult
+from pyrivet.hilbert_distance import SplitMat, Dimension, DimensionQueryResult
 
 
 def test_splitmat():

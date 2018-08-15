@@ -1,79 +1,30 @@
 pyrivet
-======
+=======
 
-PyRIVET is a Python API for interacting with RIVET_, which is a tool for calculating and
-visualizing 2-parameter persistent homology, which is useful for topological data analysis (TDA).
+The `pyrivet` package is a Python API for interacting with RIVET_, which is a tool for calculating and
+visualizing 2-parameter persistent homology, which in turn is useful for topological data analysis (TDA).
 
 Requirements
 ------------
 
-This package requires `rivet_console` from RIVET_, as well as `bottleneck_dist` from Hera_ to be installed on the PATH.
+This package requires `rivet_console` from `RIVET`_ in order to run. Please see the documentation for RIVET for `installation procedures <http://rivet.readthedocs.io/en/latest/installing.html>`_, and please be sure to add the folder containing rivet_console to your PATH environment variable.
+
+If would you would like to use the matching distance computation, or bottleneck distances, you will
+also need the `bottleneck_dist` application from `Hera`_ to be installed in a folder on your PATH.
+
+To install this package, clone this git repository to your local machine and install using pip::
+
+    git clone https://github.com/rivettda/rivet-python
+    cd rivet-python
+    /path/to/your/preferred/pip install -e .
+
+
+Again, don't forget to install RIVET's rivet_console application and Hera's bottleneck_dist application and put them on your PATH!
 
 Sample usage
 ------------
 
-If you're working with in-memory data:
-
-.. code-block:: python
-
-    from pyrivet import rivet, barcode, hera, matching_distance
-    from pyrivet.rivet import Point, PointCloud
-
-    # Create some data:
-    points1 = PointCloud([
-        Point(0, 0, 0),
-        Point(0, 0, 1), #First arg is 2nd param appearance, remaining are coordinates
-        Point(0, 1, 0)
-        ],
-        "codensity",
-        max_dist=1.5
-    )
-
-    points2 = rivet.PointCloud([
-        Point(0, 0, 0),
-        Point(0, 0, 1), #First arg is 2nd param appearance, remaining are coordinates
-        Point(0, 1, 0)
-        ],
-        "codensity",
-        max_dist=1.5
-    )
-
-    # Compute persistence module in RIVET format, which can be passed to other pyrivet methods
-    computed1 = rivet.compute_point_cloud(points1, homology=0, x=10, y=10)
-    computed2 = rivet.compute_point_cloud(points2, homology=0, x=10, y=10)
-
-    # Generate bar codes for each slice in explicit slice list
-    multi_bars1 = rivet.barcodes(computed1, [(45, 0)])
-    multi_bars2 = rivet.barcodes(computed2, [(45, 0)])
-
-    for (angle, offset), codes in multi_bars1:
-        print("For %s %s:" % (angle, offset))
-        print(codes)
-
-    # Calculate bottleneck distance between any two barcodes:
-    print("Distance: ", hera.bottleneck_distance(multi_bars1[0][1], multi_bars2[0][1]))
-
-    # Calculate approximate matching distance between the two persistence modules:
-    dist = matching_distance.matching_distance(computed1, computed2, grid_size=50, normalize=True)
-
-
-If you have RIVET input files already and just want to call RIVET on them:
-
-.. code-block:: python
-
-    from pyrivet import rivet, barcode, hera
-
-    # Precompute if needed, assuming valid input data in my_file_name1 and my_file_name2
-    computed_name_1 = rivet.compute_file(my_file_name1, homology=0, x=10, y=10)
-    computed_name_2 = rivet.compute_file(my_file_name2, homology=0, x=10, y=10)
-
-    # Generate bar codes for each slice in slice_file_name
-    multi_bars1 = rivet.barcodes_file(computed_name_1, slice_file_name_1)
-    multi_bars2 = rivet.barcodes_file(computed_name_2, slice_file_name_2)
-
-    # Calculate bottleneck distance between any two barcodes:
-    print("Distance: ", hera.bottleneck_distance(multi_bars1[0][1], multi_bars2[0][1]))
-
+Please see the `RIVET Python API Tour <example/RIVET%20Python%20API%20Tour.ipynb>`_
 
 
 .. _RIVET:http://rivet.online

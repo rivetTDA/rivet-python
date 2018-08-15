@@ -133,7 +133,7 @@ def offset_tup(tup, x, y):
 
 
 def offset_point(point: rivet.Point, x, y):
-    return rivet.Point(offset_tup(point.appearance, x, y), *point.coords)
+    return rivet.Point(offset_tup(point.appearance, x, y), *point.coordinates)
 
 
 def offset(bifiltration: rivet.Bifiltration, x, y):
