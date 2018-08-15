@@ -17,8 +17,21 @@ rivet_executable = 'rivet_console'
 
 
 class PointCloud:
+    """
+    Input format for RIVET point cloud data
+    """
     def __init__(self, points, appearance=None, second_param_name=None,
                  comments=None, max_dist=None):
+        """
+        :param points: list of tuples, or 2D numpy array of float or int
+        :param appearance: list or 1D array of float or int
+        :param second_param_name: str
+        :param comments: str
+            the comments to appear in the generated file
+        :param max_dist:
+            a cutoff distance beyond which no calculations will be done. If not
+            provided, a maximal distance will be calculated
+        """
         if second_param_name:
             self.second_param_name = second_param_name
         else:
@@ -48,6 +61,10 @@ class PointCloud:
         return abs(hi - lo)
 
     def save(self, out):
+        """
+        Writes the data set to a file in RIVET point-cloud format
+        :param out: a file-like object with a `write` method
+        """
         if self.comments:
             out.writelines(["# " + line + "\n"
                             for line in str(self.comments).split("\n")])
@@ -135,6 +152,24 @@ class MetricSpace:
 
 
 def compute_point_cloud(cloud, homology=0, x=0, y=0, verify=False):
+    """
+    Precomputes point cloud data using RIVET. Many functions of RIVET require
+    precomputed data as input.
+
+    :param cloud: PointCloud
+        the point cloud
+    :param homology: int
+        the homology dimension to compute
+    :param x: int
+        the number of bins in the x parameter. If 0, no binning is used.
+    :param y: int
+        the number of bins in the y parameter. If 0, no binning is used.
+    :param verify: bool
+        if true, check that a valid file was generated that RIVET can read
+    :return: bytes
+        RIVET computes some internal data structures and these are returned as
+        a byte array that can be passed to other functions in this package
+    """
     return _compute_bytes(cloud, homology, x, y, verify)
 
 
@@ -163,7 +198,19 @@ def _compute_bytes(saveable, homology, x, y, verify):
 
 
 def barcodes(bytes, slices):
-    """Returns a Barcode for each (angle, offset) tuple in `slices`."""
+    """Returns a Barcode for each (angle, offset) tuple in `slices`.
+
+    :param bytes: byte array
+        RIVET data from one of the compute_* functions in this module
+    :param slices: list of (angle in degrees, offset) tuples
+        These are the angles and offsets of the lines to draw through the
+        persistence module to obtain fibered barcodes.
+
+    :return:
+        A list of ((angle, offset), `Barcodes`) pairs, associating a Barcodes
+        instance to each (angle, offset) in the input
+    """
+
     with TempDir() as dir:
         with open(os.path.join(dir, 'precomputed.rivet'), 'wb') as precomp:
             precomp.write(bytes)
