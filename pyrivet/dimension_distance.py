@@ -138,6 +138,18 @@ class SplitMat:
         assert len(vect) == len(self.dimensions)
         return SplitMat(self.mat, [d.translate(f) for d, f in zip(self.dimensions, vect)])
 
+    def make_compatible(self, other):
+        dims = [s.merge(o) for s, o in zip(self.dimensions, other.dimensions)]
+        left = self
+        left = left.add_row(dims[0].lower_bound)
+        for bound in dims[0].upper_bounds:
+            left = left.add_row(bound)
+        left = left.add_col(dims[1].lower_bound)
+        for bound in dims[1].upper_bounds:
+            left = left.add_col(bound)
+        mat = left.mat.astype(np.float)
+        return SplitMat(mat, dims)
+
     def __add__(self, other):
         dims = [s.merge(o) for s, o in zip(self.dimensions, other.dimensions)]
         left, right = self, other

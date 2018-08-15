@@ -7,6 +7,8 @@ import fractions
 import tempfile
 import os
 import shutil
+import numpy as np
+from typing import List, Tuple
 
 """An interface for rivet_console, using the command line
 and subprocesses."""
@@ -300,17 +302,31 @@ class Dimensions:
                and self.x_grades == other.x_grades \
                and self.y_grades == other.y_grades
 
+    def bounds(self):
+        """Calculates a minimal Bounds for these Dimensions"""
+        return Bounds(
+            (min(self.x_grades), min(self.y_grades)),
+            (max(self.x_grades), max(self.y_grades))
+        )
+
 
 class MultiBetti:
-    def __init__(self, dims: Dimensions, xi_0, xi_1, xi_2):
-        self.dimensions = dims
+    """Multi-graded Betti numbers for a 2-parameter persistence module"""
+    def __init__(self,
+                 dimensions: Dimensions,
+                 graded_rank: np.ndarray,
+                 xi_0: List[Tuple[int, int, int]],
+                 xi_1: List[Tuple[int, int, int]],
+                 xi_2: List[Tuple[int, int, int]]):
+        self.dimensions = dimensions
+        self.graded_rank = graded_rank
         self.xi_0 = xi_0
         self.xi_1 = xi_1
         self.xi_2 = xi_2
 
     def __repr__(self):
-        return "MultiBetti(%s, %s, %s, %s)" % \
-               (self.dimensions, self.xi_0, self.xi_1, self.xi_2)
+        return "MultiBetti(%s, %s, %s, %s, %s)" % \
+               (self.dimensions, self.graded_rank, self.xi_0, self.xi_1, self.xi_2)
 
 
 def _parse_betti(text):
@@ -320,6 +336,8 @@ def _parse_betti(text):
     xi = [[], [], []]
 
     current_xi = None
+    ranks = {}
+    in_ranks = False
 
     for line in text:
         line = line.strip()
@@ -331,6 +349,10 @@ def _parse_betti(text):
             current_grades = x_grades
         elif line == 'y-grades':
             current_grades = y_grades
+        elif line == 'Dimensions > 0:':
+            in_ranks = True
+        elif line == 'Betti numbers:':
+            in_ranks = False
         elif line is None:
             current_grades = None
             current_xi = None
@@ -338,10 +360,24 @@ def _parse_betti(text):
             current_grades.append(fractions.Fraction(line))
         elif line.startswith('xi_'):
             current_xi = xi[int(line[3])]
+        elif in_ranks:
+            x, y, rank = tuple(map(int, line[1:-1].split(',')))
+            ranks[(x, y)] = rank
         elif current_xi is not None:
             current_xi.append(tuple(map(int, line[1:-1].split(','))))
 
-    return MultiBetti(Dimensions(x_grades, y_grades), *xi)
+    max_x = max_y = 0
+
+    for x, y in ranks.keys():
+        max_x = max(x, max_x)
+        max_y = max(y, max_y)
+
+    shape = (max_y + 1, max_x + 1)
+    rank_mat = np.zeros(shape)
+    for (x, y), rank in ranks.items():
+        rank_mat[y, x] = rank
+
+    return MultiBetti(Dimensions(x_grades, y_grades), rank_mat, *xi)
 
 
 def _parse_slices(text):

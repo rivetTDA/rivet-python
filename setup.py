@@ -27,6 +27,7 @@ setup(
     ],
     install_requires=[
         'numpy',
+        'pillow'
     ],
     author='The RIVET developers',
     author_email='xoltar@xoltar.org',
