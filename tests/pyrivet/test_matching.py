@@ -1,20 +1,17 @@
 # Borrowed from https://github.com/IntelPNI/brainiak-extras
-import os
-import tempfile
-
 import math
 
 import sys
 
-from pyrivet import rivet, hera, barcode, matching_distance, rank
+from pyrivet import rivet, matching_distance
 
 inf = float('inf')
 
 # A triangle, with all points appearing at the same index.
 cloud_1 = rivet.PointCloud([
-    rivet.Point(0, 0, 0),
-    rivet.Point(0, 1, 0),
-    rivet.Point(0, 0, 1)
+    (0, 0, 0),
+    (0, 1, 0),
+    (0, 0, 1)
 ], second_param_name='irrelevant', max_dist=1.5)
 
 
@@ -29,116 +26,207 @@ def assert_barcodes(cloud, dim, buckets, angle, offset, barcodes):
 
 
 prism_1 = rivet.Bifiltration("x_label", "y_label", [
-    rivet.Point((1, 0), 0, 1),
-    rivet.Point((1, 0), 0, 2),
-    rivet.Point((1, 0), 1, 2),
+     [0, 1],
+     [0, 2],
+     [1, 2],
 
-    rivet.Point((0, 1), 3, 4),
-    rivet.Point((0, 1), 4, 5),
-    rivet.Point((0, 1), 3, 5),
+     [3, 4],
+     [4, 5],
+     [3, 5],
 
-    rivet.Point((1, 1), 1, 2, 4),
-    rivet.Point((1, 1), 2, 4, 5),
-    rivet.Point((1, 1), 0, 1, 3),
-    rivet.Point((1, 1), 1, 3, 4),
-    rivet.Point((1, 1), 0, 2, 5),
-    rivet.Point((1, 1), 0, 3, 5),
+     [1, 2, 4],
+     [2, 4, 5],
+     [0, 1, 3],
+     [1, 3, 4],
+     [0, 2, 5],
+     [0, 3, 5],
 
-    rivet.Point((4, 0), 0, 1, 2),
-    rivet.Point((0, 4), 3, 4, 5)
+     [0, 1, 2],
+     [3, 4, 5]
+    ],
+    appearances=[
+    [(1, 0)],
+    [(1, 0)],
+    [(1, 0)],
+
+    [(0, 1)],
+    [(0, 1)],
+    [(0, 1)],
+
+    [(1, 1)],
+    [(1, 1)],
+    [(1, 1)],
+    [(1, 1)],
+    [(1, 1)],
+    [(1, 1)],
+
+    [(4, 0)],
+    [(0, 4)]
 ])
 
 prism_2 = rivet.Bifiltration("x_label", "y_label", [
-    rivet.Point((0, 0), 1, 2, 4),
-    rivet.Point((0, 0), 2, 4, 5),
-    rivet.Point((0, 0), 0, 1, 3),
-    rivet.Point((0, 0), 1, 3, 4),
-    rivet.Point((0, 0), 0, 2, 3),
-    rivet.Point((0, 0), 2, 5, 3),
-    rivet.Point((4, 0), 0, 1, 2),
-    rivet.Point((0, 4), 3, 4, 5),
-    rivet.Point((3, 3), 2, 4, 3)
+
+    [1, 2, 4],
+    [2, 4, 5],
+    [0, 1, 3],
+    [1, 3, 4],
+    [0, 2, 3],
+    [2, 5, 3],
+    [0, 1, 2],
+    [3, 4, 5],
+    [2, 4, 3]
+],
+    appearances=[
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(4, 0)],
+    [(0, 4)],
+    [(3, 3)],
 ])
 
-# the next two exampels take the last two examples, and simply double the y-coordinates
+# the next two examples take the last two examples, and simply double the y-coordinates
 prism_1_stretch = rivet.Bifiltration("x_label", "y_label", [
-    rivet.Point((1, 0), 0, 1),
-    rivet.Point((1, 0), 0, 2),
-    rivet.Point((1, 0), 1, 2),
+    [0, 1],
+    [0, 2],
+    [1, 2],
 
-    rivet.Point((0, 2), 3, 4),
-    rivet.Point((0, 2), 4, 5),
-    rivet.Point((0, 2), 3, 5),
+    [3, 4],
+    [4, 5],
+    [3, 5],
 
-    rivet.Point((1, 2), 1, 2, 4),
-    rivet.Point((1, 2), 2, 4, 5),
-    rivet.Point((1, 2), 0, 1, 3),
-    rivet.Point((1, 2), 1, 3, 4),
-    rivet.Point((1, 2), 0, 2, 5),
-    rivet.Point((1, 2), 0, 3, 5),
+    [1, 2, 4],
+    [2, 4, 5],
+    [0, 1, 3],
+    [1, 3, 4],
+    [0, 2, 5],
+    [0, 3, 5],
 
-    rivet.Point((4, 0), 0, 1, 2),
-    rivet.Point((0, 8), 3, 4, 5)
-])
+    [0, 1, 2],
+    [3, 4, 5]
+],
+    appearances=[
+
+        [(1, 0)],
+        [(1, 0)],
+        [(1, 0)],
+
+        [(0, 2)],
+        [(0, 2)],
+        [(0, 2)],
+
+        [(1, 2)],
+        [(1, 2)],
+        [(1, 2)],
+        [(1, 2)],
+        [(1, 2)],
+        [(1, 2)],
+
+        [(4, 0)],
+        [(0, 8)]
+    ])
 
 prism_2_stretch = rivet.Bifiltration("x_label", "y_label", [
-    rivet.Point((0, 0), 1, 2, 4),
-    rivet.Point((0, 0), 2, 4, 5),
-    rivet.Point((0, 0), 0, 1, 3),
-    rivet.Point((0, 0), 1, 3, 4),
-    rivet.Point((0, 0), 0, 2, 3),
-    rivet.Point((0, 0), 2, 5, 3),
-    rivet.Point((4, 0), 0, 1, 2),
-    rivet.Point((0, 8), 3, 4, 5),
-    rivet.Point((3, 6), 2, 4, 3)
+
+    [1, 2, 4],
+    [2, 4, 5],
+    [0, 1, 3],
+    [1, 3, 4],
+    [0, 2, 3],
+    [2, 5, 3],
+    [0, 1, 2],
+    [3, 4, 5],
+    [2, 4, 3]],
+                                     appearances=[
+
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(4, 0)],
+    [(0, 8)],
+    [(3, 6)]
 ])
 
 prism_3 = rivet.Bifiltration("x_label", "y_label", [
-    rivet.Point((0, 0), 1, 2, 4),
-    rivet.Point((0, 0), 2, 4, 5),
-    rivet.Point((0, 0), 0, 1, 3),
-    rivet.Point((0, 0), 1, 3, 4),
-    rivet.Point((0, 0), 0, 2, 3),
-    rivet.Point((0, 0), 2, 5, 3),
-    rivet.Point((4, 0), 0, 1, 2),
-    rivet.Point((0, 4), 3, 4, 5)
+
+    [1, 2, 4],
+    [2, 4, 5],
+    [0, 1, 3],
+    [1, 3, 4],
+    [0, 2, 3],
+    [2, 5, 3],
+    [0, 1, 2],
+    [3, 4, 5]],
+                             appearances=[
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(4, 0)],
+    [(0, 4)]
 ])
 
 prism_3_shift = rivet.Bifiltration("x_label", "y_label", [
-    rivet.Point((-1, -2), 1, 2, 4),
-    rivet.Point((-1, -2), 2, 4, 5),
-    rivet.Point((-1, -2), 0, 1, 3),
-    rivet.Point((-1, -2), 1, 3, 4),
-    rivet.Point((-1, -2), 0, 2, 3),
-    rivet.Point((-1, -2), 2, 5, 3),
-    rivet.Point((3, -2), 0, 1, 2),
-    rivet.Point((-1, 2), 3, 4, 5)
+    [ 1, 2, 4],
+    [ 2, 4, 5],
+    [ 0, 1, 3],
+    [ 1, 3, 4],
+    [ 0, 2, 3],
+    [ 2, 5, 3],
+    [0, 1, 2],
+    [3, 4, 5]],
+                                   appearances=[
+
+    [(-1, -2)],
+    [(-1, -2)],
+    [(-1, -2)],
+    [(-1, -2)],
+    [(-1, -2)],
+    [(-1, -2)],
+    [(3, -2)],
+    [(-1, 2)]
 ])
 
 prism_3_stretch = rivet.Bifiltration("x_label", "y_label", [
-    rivet.Point((0, 0), 1, 2, 4),
-    rivet.Point((0, 0), 2, 4, 5),
-    rivet.Point((0, 0), 0, 1, 3),
-    rivet.Point((0, 0), 1, 3, 4),
-    rivet.Point((0, 0), 0, 2, 3),
-    rivet.Point((0, 0), 2, 5, 3),
-    rivet.Point((4, 0), 0, 1, 2),
-    rivet.Point((0, 8), 3, 4, 5)
+
+    [1, 2, 4],
+    [2, 4, 5],
+    [0, 1, 3],
+    [1, 3, 4],
+    [0, 2, 3],
+    [2, 5, 3],
+    [0, 1, 2],
+    [3, 4, 5]],
+                                     appearances=[
+
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(4, 0)],
+    [(0, 8)]
 ])
 
 
-def offset_tup(tup, x, y):
-    ox, oy = tup
-    return ox + x, oy + y
-
-
-def offset_point(point: rivet.Point, x, y):
-    return rivet.Point(offset_tup(point.appearance, x, y), *point.coordinates)
+def offset_point(appearances, x, y):
+    return [(a[0] + x, a[1] + y) for a in appearances]
 
 
 def offset(bifiltration: rivet.Bifiltration, x, y):
     return rivet.Bifiltration(bifiltration.x_label, bifiltration.y_label,
-                              [offset_point(p, x, y) for p in bifiltration.simplices])
+                              simplices=bifiltration.simplices,
+                              appearances=[offset_point(p, x, y) for p in bifiltration.appearances],
+                              )
 
 
 def test_overlaps_grid_5():

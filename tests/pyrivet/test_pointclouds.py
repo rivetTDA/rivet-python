@@ -5,9 +5,9 @@ inf = float('inf')
 
 # A triangle, with all points appearing at the same index.
 cloud_1 = rivet.PointCloud([
-    rivet.Point(0, 0, 0),
-    rivet.Point(0, 1, 0),
-    rivet.Point(0, 0, 1)
+    (0, 0, 0),
+    (0, 1, 0),
+    (0, 0, 1)
 ], second_param_name='irrelevant', max_dist=1.5)
 
 

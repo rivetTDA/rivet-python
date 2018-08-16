@@ -2,36 +2,67 @@ from pyrivet import rivet, rank
 import math
 
 prism_3 = rivet.Bifiltration("x_label", "y_label", [
-    rivet.Point((0, 0), 1, 2, 4),
-    rivet.Point((0, 0), 2, 4, 5),
-    rivet.Point((0, 0), 0, 1, 3),
-    rivet.Point((0, 0), 1, 3, 4),
-    rivet.Point((0, 0), 0, 2, 3),
-    rivet.Point((0, 0), 2, 5, 3),
-    rivet.Point((4, 0), 0, 1, 2),
-    rivet.Point((0, 4), 3, 4, 5)
+
+    [1, 2, 4],
+    [2, 4, 5],
+    [0, 1, 3],
+    [1, 3, 4],
+    [0, 2, 3],
+    [2, 5, 3],
+    [0, 1, 2],
+    [3, 4, 5]],
+                             appearances=[
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(4, 0)],
+    [(0, 4)]
 ])
 
 prism_3_shift = rivet.Bifiltration("x_label", "y_label", [
-    rivet.Point((-1, -2), 1, 2, 4),
-    rivet.Point((-1, -2), 2, 4, 5),
-    rivet.Point((-1, -2), 0, 1, 3),
-    rivet.Point((-1, -2), 1, 3, 4),
-    rivet.Point((-1, -2), 0, 2, 3),
-    rivet.Point((-1, -2), 2, 5, 3),
-    rivet.Point((3, -2), 0, 1, 2),
-    rivet.Point((-1, 2), 3, 4, 5)
+    [ 1, 2, 4],
+    [ 2, 4, 5],
+    [ 0, 1, 3],
+    [ 1, 3, 4],
+    [ 0, 2, 3],
+    [ 2, 5, 3],
+    [ 0, 1, 2],
+    [ 3, 4, 5]],
+                                   appearances=[
+
+    [(-1, -2)],
+    [(-1, -2)],
+    [(-1, -2)],
+    [(-1, -2)],
+    [(-1, -2)],
+    [(-1, -2)],
+    [(3, -2)],
+    [(-1, 2)]
 ])
 
 prism_3_stretch = rivet.Bifiltration("x_label", "y_label", [
-    rivet.Point((0, 0), 1, 2, 4),
-    rivet.Point((0, 0), 2, 4, 5),
-    rivet.Point((0, 0), 0, 1, 3),
-    rivet.Point((0, 0), 1, 3, 4),
-    rivet.Point((0, 0), 0, 2, 3),
-    rivet.Point((0, 0), 2, 5, 3),
-    rivet.Point((4, 0), 0, 1, 2),
-    rivet.Point((0, 8), 3, 4, 5)
+
+    [1, 2, 4],
+    [2, 4, 5],
+    [0, 1, 3],
+    [1, 3, 4],
+    [0, 2, 3],
+    [2, 5, 3],
+    [0, 1, 2],
+    [3, 4, 5]],
+                                     appearances=[
+
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(0, 0)],
+    [(4, 0)],
+    [(0, 8)]
 ])
 
 # simple test with rank function at most one
