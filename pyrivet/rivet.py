@@ -8,6 +8,7 @@ import tempfile
 import os
 import shutil
 import numpy as np
+import scipy.spatial.distance as distance
 from typing import List, Tuple
 
 """An interface for rivet_console, using the command line
@@ -51,14 +52,7 @@ class PointCloud:
 
     def _calc_max_dist(self):
         # Simplest possible max distance measure
-        lo, hi = 0, 0
-        for p in self.points:
-            for coord in p.coordinates:
-                if coord < lo:
-                    lo = coord
-                if coord > hi:
-                    hi = coord
-        return abs(hi - lo)
+        return distance.squareform(distance.pdist(self.points)).max()
 
     def save(self, out):
         """
