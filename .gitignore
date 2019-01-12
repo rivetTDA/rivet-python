@@ -95,6 +95,5 @@ ENV/
 .vscode
 *.rivet
 *.txt
-pyrivet
 mod1
 mod2
