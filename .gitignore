@@ -91,3 +91,10 @@ ENV/
 # PyCharm, IDEA
 .idea
 
+.DS_Store
+.vscode
+*.rivet
+*.txt
+pyrivet
+mod1
+mod2
