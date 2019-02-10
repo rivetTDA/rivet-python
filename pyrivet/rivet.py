@@ -381,6 +381,9 @@ class Bounds:
     def __repr__(self):
         return "Bounds(lower_left=%s, upper_right=%s)" % (self.lower_left, self.upper_right)
 
+    def __eq__(self, other):
+        return self.lower_left == other.lower_left and self.upper_right == other.upper_right
+
     def common_bounds(self, other: 'Bounds'):
         """Returns a minimal Bounds that encloses both self and other"""
 
