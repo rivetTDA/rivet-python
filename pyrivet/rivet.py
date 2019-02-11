@@ -300,8 +300,11 @@ def summarize(saveable, homology=0, x=0, y=0, slices=None, bounds=False, structu
             cmd += " --bounds"
         if not return_invariants:
             cmd += " --no-invariants"
-        output = subprocess.check_output(shlex.split(cmd)).split(b'\n')
-        print(output)
+        output = subprocess.check_output(shlex.split(cmd), universal_newlines=True, stderr=subprocess.STDOUT).split('\n')
+        # TODO: use logging instead? Or warn?
+        if any(output):
+            for line in output:
+                print(f"RIVET: {line}")
         if return_invariants:
             invariants = open(output_path, 'rb').read()
         else:
