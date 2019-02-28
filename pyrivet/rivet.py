@@ -231,8 +231,8 @@ def compute_file(input_name, output_name=None, homology=0, x=0, y=0, threads=1):
         cmd = "%s %s %s -H %d -x %d -y %d --redis %s --threads %d" % \
               (rivet_client, input_name, output_name, homology, x, y, server_url, threads)
     else:
-        cmd = "%s %s %s -H %d -x %d -y %d -f msgpack --num_threads %s" % \
-              (rivet_executable, input_name, output_name, homology, x, y, threads)
+        cmd = "%s %s %s -H %d -x %d -y %d -f msgpack" % \
+              (rivet_executable, input_name, output_name, homology, x, y)
     subprocess.check_output(shlex.split(cmd))
     return output_name
 
