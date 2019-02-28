@@ -1,8 +1,7 @@
 pyrivet
 =======
 
-The `pyrivet` package is a Python API for interacting with RIVET_, which is a tool for calculating and
-visualizing 2-parameter persistent homology, which in turn is useful for topological data analysis (TDA).
+The `pyrivet` package is a Python API for interacting with RIVET_.  RIVET is a topological data analysis tool which computes and visualizes 2-parameter persistent homology.
 
 Immediate priorities for `pyrivet` are better documentation and simpler install procedures. If
 you have additional suggestions, please use the Github issue tracker for this project.
