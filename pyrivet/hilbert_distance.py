@@ -117,7 +117,7 @@ class SplitMat:
             mat = np.insert(self.mat, 0, [0], axis=1)
             # print("After:")
             # print(mat)
-        elif col == DimensionQueryResult.HIGH:
+        elif flag == DimensionQueryResult.HIGH:
             # print("HIGH")
             mat = np.append(self.mat, np.zeros((self.mat.shape[0], 1)), axis=1)
         elif not self.dimensions[1].is_bound(first_length):
