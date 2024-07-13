@@ -147,7 +147,7 @@ class SplitMat:
         left = left.add_col(dims[1].lower_bound)
         for bound in dims[1].upper_bounds:
             left = left.add_col(bound)
-        mat = left.mat.astype(np.float)
+        mat = left.mat.astype(np.float64)
         return SplitMat(mat, dims)
 
     def __add__(self, other):
@@ -163,7 +163,7 @@ class SplitMat:
         for bound in dims[1].upper_bounds:
             left = left.add_col(bound)
             right = right.add_col(bound)
-        mat = left.mat.astype(np.float) + right.mat.astype(np.float)
+        mat = left.mat.astype(np.float64) + right.mat.astype(np.float64)
         return SplitMat(mat, dims)
 
     def __neg__(self):
