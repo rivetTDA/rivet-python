@@ -88,19 +88,25 @@ class PointCloud:
 
 
 class Bifiltration:
-    def __init__(self, x_label, y_label, simplices, appearances):
+    def __init__(self, x_label, y_label, simplices, appearances, xreverse=False, yreverse = False):
         self.x_label = x_label
         self.y_label = y_label
         self.simplices = simplices
         self.appearances = appearances
+        self.xreverse=xreverse
+        self.yreverse = yreverse
 
         if len(simplices) != len(appearances):
             raise ValueError("Appearances and simplices must be the same length")
 
     def save(self, out):
-        out.write('bifiltration\n')
-        out.write(self.x_label + '\n')
-        out.write(self.y_label + '\n')
+        out.write('--datatype bifiltration\n')
+        out.write('--xlabel '+self.x_label + '\n')
+        out.write('--ylabel '+self.y_label + '\n')
+        if self.xreverse:
+            out.write("--xreverse\n")
+        if self.yreverse:
+            out.write("--yreverse\n")
         for i, (simplex, appears) in enumerate(zip(self.simplices, self.appearances)):
             for v in simplex:
                 out.write('{:d} '.format(v))
@@ -108,7 +114,7 @@ class Bifiltration:
             out.write('; ')
             for a in appears:
                 for g in a:
-                    out.write('{:d} '.format(g))
+                    out.write('{:f} '.format(g))
                     out.write(" ")
             out.write("\n")
         out.write("\n")
